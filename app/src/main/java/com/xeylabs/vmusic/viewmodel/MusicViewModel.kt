@@ -188,6 +188,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val consecutiveErrors: StateFlow<Int> = queueManager.consecutiveErrors
 
     val authState = com.xeylabs.vmusic.data.auth.AuthManager.getInstance().authState
+    val sessionExpired = com.xeylabs.vmusic.data.auth.AuthManager.getInstance().sessionExpired
 
     val settingsManager = com.xeylabs.vmusic.data.settings.SettingsManager.getInstance()
     val themeMode = settingsManager.themeMode

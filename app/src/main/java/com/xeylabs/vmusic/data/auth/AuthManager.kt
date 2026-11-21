@@ -17,6 +17,12 @@ import org.json.JSONArray
 import org.json.JSONObject
 import java.security.MessageDigest
 
+private enum class AccountProbeOutcome {
+    FOUND,
+    NO_IDENTITY,
+    NETWORK_ERROR
+}
+
 data class UserAccount(
     val name: String,
     val email: String,
@@ -35,6 +41,9 @@ class AuthManager private constructor(private val context: Context) {
 
     private val _authState = MutableStateFlow<UserAccount?>(loadStoredAccount())
     val authState: StateFlow<UserAccount?> = _authState.asStateFlow()
+
+    private val _sessionExpired = MutableStateFlow(prefs.getBoolean(KEY_SESSION_EXPIRED, false))
+    val sessionExpired: StateFlow<Boolean> = _sessionExpired.asStateFlow()
 
     private fun loadStoredAccount(): UserAccount? {
         val rawCookie = prefs.getString(KEY_COOKIE, null) ?: return null
@@ -237,6 +246,7 @@ class AuthManager private constructor(private val context: Context) {
             .apply()
 
         _authState.value = initialAccount
+        setSessionExpired(false)
 
         authScope.launch {
             fetchAccountInfo(cleanCookie)
@@ -270,6 +280,7 @@ class AuthManager private constructor(private val context: Context) {
                 .putLong(KEY_LAST_CHECK, System.currentTimeMillis())
                 .apply()
             _authState.value = current.copy(cookie = updatedCookie)
+            setSessionExpired(false)
         }
     }
 
@@ -330,10 +341,30 @@ class AuthManager private constructor(private val context: Context) {
     }
 
     suspend fun fetchAccountInfo(cookie: String) {
-        if (tryFetchAccountMenu(cookie, isMusic = true)) return
-        if (tryFetchAccountMenu(cookie, isMusic = false)) return
-        if (tryFetchAccountsList(cookie)) return
-        tryScrapeWebProfile(cookie)
+        val outcomes = ArrayList<AccountProbeOutcome>()
+        val probes = listOf(
+            { tryFetchAccountMenu(cookie, isMusic = true) },
+            { tryFetchAccountMenu(cookie, isMusic = false) },
+            { tryFetchAccountsList(cookie) },
+            { tryScrapeWebProfile(cookie) }
+        )
+        for (probe in probes) {
+            val outcome = probe()
+            if (outcome == AccountProbeOutcome.FOUND) {
+                setSessionExpired(false)
+                return
+            }
+            outcomes.add(outcome)
+        }
+        if (outcomes.all { it == AccountProbeOutcome.NO_IDENTITY }) {
+            setSessionExpired(true)
+        }
+    }
+
+    private fun setSessionExpired(expired: Boolean) {
+        if (_sessionExpired.value == expired) return
+        prefs.edit().putBoolean(KEY_SESSION_EXPIRED, expired).apply()
+        _sessionExpired.value = expired
     }
 
     private fun extractAccountDetailsFromJson(root: JSONObject): Boolean {
@@ -426,7 +457,7 @@ class AuthManager private constructor(private val context: Context) {
         return false
     }
 
-    private fun tryFetchAccountMenu(cookie: String, isMusic: Boolean): Boolean {
+    private fun tryFetchAccountMenu(cookie: String, isMusic: Boolean): AccountProbeOutcome {
         try {
             val origin = if (isMusic) "https://music.youtube.com" else "https://www.youtube.com"
             val clientName = if (isMusic) "WEB_REMIX" else "WEB"
@@ -474,20 +505,19 @@ class AuthManager private constructor(private val context: Context) {
 
             httpClient.newCall(reqBuilder.build()).execute().use { resp ->
                 val respString = resp.body?.string().orEmpty()
-                if (resp.isSuccessful && respString.isNotBlank()) {
-                    val json = JSONObject(respString)
-                    if (extractAccountDetailsFromJson(json)) {
-                        return true
-                    }
-                }
+                if (resp.code == 401 || resp.code == 403) return AccountProbeOutcome.NO_IDENTITY
+                if (!resp.isSuccessful || respString.isBlank()) return AccountProbeOutcome.NETWORK_ERROR
+                val json = JSONObject(respString)
+                if (extractAccountDetailsFromJson(json)) return AccountProbeOutcome.FOUND
+                return AccountProbeOutcome.NO_IDENTITY
             }
         } catch (e: Exception) {
             Log.d("VmusicAuth", "Account menu fetch error: ${e.message}")
         }
-        return false
+        return AccountProbeOutcome.NETWORK_ERROR
     }
 
-    private fun tryFetchAccountsList(cookie: String): Boolean {
+    private fun tryFetchAccountsList(cookie: String): AccountProbeOutcome {
         try {
             val origin = "https://www.youtube.com"
             val sapisidHash = getSapisidHash(origin, cookie)
@@ -521,26 +551,27 @@ class AuthManager private constructor(private val context: Context) {
 
             httpClient.newCall(reqBuilder.build()).execute().use { resp ->
                 val respString = resp.body?.string().orEmpty()
-                if (resp.isSuccessful && respString.isNotBlank()) {
-                    val json = JSONObject(respString)
-                    if (extractAccountDetailsFromJson(json)) {
-                        return true
-                    }
-                }
+                if (resp.code == 401 || resp.code == 403) return AccountProbeOutcome.NO_IDENTITY
+                if (!resp.isSuccessful || respString.isBlank()) return AccountProbeOutcome.NETWORK_ERROR
+                val json = JSONObject(respString)
+                if (extractAccountDetailsFromJson(json)) return AccountProbeOutcome.FOUND
+                return AccountProbeOutcome.NO_IDENTITY
             }
         } catch (e: Exception) {
             Log.d("VmusicAuth", "Accounts list fetch error: ${e.message}")
         }
-        return false
+        return AccountProbeOutcome.NETWORK_ERROR
     }
 
-    private fun tryScrapeWebProfile(cookie: String): Boolean {
+    private fun tryScrapeWebProfile(cookie: String): AccountProbeOutcome {
         val urls = listOf("https://music.youtube.com/", "https://www.youtube.com/")
         val userRegex = Regex("\"(?:USER_NAME|ACCOUNT_NAME)\"\\s*:\\s*\"([^\"]+)\"")
         val delegatedRegex = Regex("\"DELEGATED_SESSION_ID\"\\s*:\\s*\"([^\"]+)\"")
         val sessionIdxRegex = Regex("\"SESSION_INDEX\"\\s*:\\s*\"?(\\d+)\"?")
         val avatarUrlRegex = Regex("https?:\\\\?/\\\\?/(?:yt3\\.ggpht\\.com|lh3\\.googleusercontent\\.com)[^\"'\\s\\\\]+")
         val simpleNameRegex = Regex("\"accountName\"\\s*:\\s*\\{\\s*\"simpleText\"\\s*:\\s*\"([^\"]+)\"")
+        var sawResponse = false
+        var foundIdentity = false
 
         for (url in urls) {
             try {
@@ -553,7 +584,12 @@ class AuthManager private constructor(private val context: Context) {
 
                 httpClient.newCall(req).execute().use { resp ->
                     val html = resp.body?.string().orEmpty()
-                    if (!resp.isSuccessful || html.isBlank()) return@use
+                    if (!resp.isSuccessful) {
+                        if (resp.code == 401 || resp.code == 403) sawResponse = true
+                        return@use
+                    }
+                    if (html.isBlank()) return@use
+                    sawResponse = true
 
                     var scrapedName = userRegex.find(html)?.groupValues?.getOrNull(1).orEmpty()
                     val delegatedSessionId = delegatedRegex.find(html)?.groupValues?.getOrNull(1).orEmpty()
@@ -572,19 +608,23 @@ class AuthManager private constructor(private val context: Context) {
                             authUser = sessionIndex,
                             pageId = delegatedSessionId
                         )
+                        foundIdentity = true
                         if (scrapedName.isNotBlank() && normAvatar.isNotBlank()) {
-                            return true
+                            return AccountProbeOutcome.FOUND
                         }
                     }
                 }
             } catch (_: Exception) {}
         }
-        return false
+        if (foundIdentity) return AccountProbeOutcome.FOUND
+        if (sawResponse) return AccountProbeOutcome.NO_IDENTITY
+        return AccountProbeOutcome.NETWORK_ERROR
     }
 
     fun logout() {
         prefs.edit().clear().apply()
         _authState.value = null
+        setSessionExpired(false)
         try {
             android.webkit.CookieManager.getInstance().removeAllCookies(null)
             android.webkit.CookieManager.getInstance().flush()
@@ -603,6 +643,7 @@ class AuthManager private constructor(private val context: Context) {
         private const val KEY_AUTH_USER = "yt_auth_user"
         private const val KEY_PAGE_ID = "yt_page_id"
         private const val KEY_LAST_CHECK = "yt_last_check"
+        private const val KEY_SESSION_EXPIRED = "yt_session_expired"
 
         @Volatile
         private var instance: AuthManager? = null

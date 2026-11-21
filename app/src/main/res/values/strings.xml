@@ -206,6 +206,9 @@ You</string>
     <string name="profile_top_ranking">Top Artist Rankings</string>
     <string name="login_youtube_title">Sign in to YouTube Music</string>
     <string name="login_youtube_sub">Sign in via official Google account</string>
+    <string name="session_expired_title">Session expired</string>
+    <string name="session_expired_body">Your YouTube login has expired. Log in again to keep your library, likes and recommendations working.</string>
+    <string name="session_expired_action">Log in again</string>
 
     <!-- Settings Dialog -->
     <string name="settings_title">Settings</string>

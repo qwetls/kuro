@@ -46,6 +46,7 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Mood
 import androidx.compose.material.icons.outlined.NewReleases
@@ -185,12 +186,14 @@ fun HomeScreen(
     val isPlayerExpanded by viewModel.isPlayerExpanded.collectAsState()
     val currentTrack by viewModel.currentTrack.collectAsState()
     val currentAccount by viewModel.authState.collectAsState()
+    val sessionExpired by viewModel.sessionExpired.collectAsState()
     val favorites by viewModel.favorites.collectAsState()
     val recentlyPlayed by viewModel.recentlyPlayed.collectAsState()
     val favoriteIds by remember(favorites) { derivedStateOf { favorites.mapTo(HashSet()) { it.id } } }
 
     var showProfileMenu by rememberSaveable { mutableStateOf(false) }
     var showLoginWebView by rememberSaveable { mutableStateOf(false) }
+    var sessionBannerDismissed by remember { mutableStateOf(false) }
     var showSettingsDialog by rememberSaveable { mutableStateOf(false) }
     var showRecentsDialog by rememberSaveable { mutableStateOf(false) }
     var showQueueSheet by rememberSaveable { mutableStateOf(false) }
@@ -272,6 +275,13 @@ fun HomeScreen(
                 onSearchClick = onOpenSearchTab,
                 onProfileClick = { showProfileMenu = true }
             )
+
+            if (currentAccount != null && sessionExpired && !sessionBannerDismissed) {
+                SessionExpiredBanner(
+                    onLoginClick = { showLoginWebView = true },
+                    onDismiss = { sessionBannerDismissed = true }
+                )
+            }
 
             val visibleMoodChips = remember(selectedGenre, genreChips) {
                 if (selectedGenre == "Semua") {
@@ -1049,6 +1059,67 @@ private fun SpeedDialSectionHeader(
                     modifier = Modifier.size(22.dp)
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun SessionExpiredBanner(
+    onLoginClick: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    val colors = VmusicAppTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clip(RoundedCornerShape(14.dp))
+            .background(colors.card)
+            .border(1.dp, colors.border.copy(alpha = 0.5f), RoundedCornerShape(14.dp))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            imageVector = Icons.Default.WarningAmber,
+            contentDescription = null,
+            tint = colors.accent,
+            modifier = Modifier.size(22.dp)
+        )
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.session_expired_title),
+                style = Typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = colors.textPrimary,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+            Text(
+                text = stringResource(R.string.session_expired_body),
+                style = Typography.labelSmall.copy(fontSize = 12.sp),
+                color = colors.textMuted,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+        TextButton(onClick = onLoginClick) {
+            Text(
+                text = stringResource(R.string.session_expired_action),
+                style = Typography.labelLarge.copy(fontWeight = FontWeight.Bold),
+                color = colors.accent,
+                maxLines = 1
+            )
+        }
+        IconButton(
+            onClick = onDismiss,
+            modifier = Modifier.size(28.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Default.Close,
+                contentDescription = stringResource(R.string.action_close),
+                tint = colors.textMuted,
+                modifier = Modifier.size(18.dp)
+            )
         }
     }
 }

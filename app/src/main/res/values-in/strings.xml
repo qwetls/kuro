@@ -206,6 +206,9 @@ Untukmu</string>
     <string name="profile_top_ranking">Peringkat Artis Teratas</string>
     <string name="login_youtube_title">Login ke YouTube Music</string>
     <string name="login_youtube_sub">Masuk melalui akun Google resmi</string>
+    <string name="session_expired_title">Sesi login habis</string>
+    <string name="session_expired_body">Login YouTube kamu sudah kedaluwarsa. Login lagi supaya library, lagu disukai, dan rekomendasi tetap jalan.</string>
+    <string name="session_expired_action">Login lagi</string>
 
     <!-- Settings Dialog -->
     <string name="settings_title">Pengaturan</string>
