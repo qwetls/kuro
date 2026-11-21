@@ -109,8 +109,10 @@ jobs:
           VERSION_NAME: ${{ steps.apk.outputs.version }}
         run: |
           cat > RELEASE_NOTES.md <<'EOF'
-          ## vmusic v3.9.8 — Offline Playback, Critical Fixes & Performance
+          ## vmusic v3.9.9 — YT Music-style Speed Dial
 
+          - **Speed Dial ala YouTube Music**:
+            - Grid 3x3 kini selebar layar dengan tile persegi seukuran YT Music, sudut lebih bulat, dan judul sedikit lebih besar.
           - **Offline Audio & Thumbnails**:
             - Wrapped ExoPlayer cache data source with `DefaultDataSource.Factory` so local `file://` and `content://` offline audio plays reliably without internet.
             - Downloaded and persisted local offline thumbnails alongside audio, eliminated Coil memory cache clearing on `onStop()`, and preserved MIME type and offline session restore.
@@ -132,7 +134,7 @@ jobs:
             "${{ steps.apk.outputs.arm64_path }}" \
             "${{ steps.apk.outputs.arm32_path }}" \
             "${{ steps.apk.outputs.debug_path }}" \
-            --title "vmusic $RELEASE_TAG (Offline Playback, Critical Fixes & Performance)" \
+            --title "vmusic $RELEASE_TAG (YT Music-style Speed Dial)" \
             --notes-file RELEASE_NOTES.md \
             --latest
 

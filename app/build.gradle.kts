@@ -11,8 +11,8 @@ android {
         applicationId = "com.xeylabs.vmusic"
         minSdk = 26
         targetSdk = 34
-        versionCode = 68
-        versionName = "3.9.8"
+        versionCode = 69
+        versionName = "3.9.9"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

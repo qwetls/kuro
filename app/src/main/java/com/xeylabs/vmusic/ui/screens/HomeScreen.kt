@@ -21,6 +21,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -88,6 +89,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -774,6 +777,7 @@ private fun HomeShelvesColumn(
                 HomeSectionType.SPEED_DIAL -> {
                     item(key = "sec_speed_${idx}_${section.title}") {
                         val pages = section.tracks.chunked(9)
+                        val pageWidth = LocalConfiguration.current.screenWidthDp.dp - 24.dp
                         val rowState = rememberLazyListState()
                         val snapFling = rememberSnapFlingBehavior(lazyListState = rowState)
                         val activePageIdx by remember {
@@ -783,7 +787,7 @@ private fun HomeShelvesColumn(
                             LazyRow(
                                 state = rowState,
                                 flingBehavior = snapFling,
-                                contentPadding = PaddingValues(horizontal = 16.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp),
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -792,6 +796,7 @@ private fun HomeShelvesColumn(
                                 items(pages.size, key = { p -> "sd_${idx}_$p" }) { pIdx ->
                                     SpeedDialGridPage(
                                         tracks = pages[pIdx],
+                                        pageWidth = pageWidth,
                                         currentTrackId = currentTrackId,
                                         isFirstPage = pIdx == 0,
                                         onTrackClick = { t -> onItemTap(t, section.tracks) },
@@ -1052,6 +1057,7 @@ private fun SpeedDialSectionHeader(
 @Composable
 private fun SpeedDialGridPage(
     tracks: List<Track>,
+    pageWidth: Dp,
     currentTrackId: String?,
     isFirstPage: Boolean = false,
     onTrackClick: (Track) -> Unit,
@@ -1060,13 +1066,13 @@ private fun SpeedDialGridPage(
     val colors = VmusicAppTheme.colors
     val rows = tracks.chunked(3)
     Column(
-        modifier = Modifier.width(328.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        modifier = Modifier.width(pageWidth),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         rows.forEachIndexed { rIdx, rowItems ->
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 rowItems.forEachIndexed { cIdx, track ->
                     val isPlaying = currentTrackId == track.id
@@ -1074,13 +1080,13 @@ private fun SpeedDialGridPage(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(106.dp)
-                            .clip(RoundedCornerShape(10.dp))
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(14.dp))
                             .background(colors.card)
                             .border(
                                 if (isHighlighted) 1.6.dp else 1.dp,
                                 if (isHighlighted) colors.accent else colors.border.copy(alpha = 0.35f),
-                                RoundedCornerShape(10.dp)
+                                RoundedCornerShape(14.dp)
                             )
                             .combinedClickable(
                                 onClick = { onTrackClick(track) },
@@ -1105,13 +1111,13 @@ private fun SpeedDialGridPage(
                         )
                         Text(
                             text = track.title,
-                            style = Typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontSize = 11.sp),
+                            style = Typography.labelSmall.copy(fontWeight = FontWeight.SemiBold, fontSize = 12.sp),
                             color = PureWhite,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
                             modifier = Modifier
                                 .align(Alignment.BottomStart)
-                                .padding(horizontal = 7.dp, vertical = 6.dp)
+                                .padding(horizontal = 8.dp, vertical = 7.dp)
                         )
                     }
                 }
