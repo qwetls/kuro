@@ -37,6 +37,11 @@ class MusicRepository {
         private const val YTM_CLIENT_VERSION = "1.20260401.01.00"
         private const val YTM_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36"
 
+        private data class YtmClientIdentity(val name: String, val version: String, val headerId: String, val userAgent: String)
+
+        private val YTM_CLIENT_WEB_REMIX = YtmClientIdentity(YTM_CLIENT_NAME, YTM_CLIENT_VERSION, "67", YTM_USER_AGENT)
+        private val YTM_CLIENT_ANDROID_MUSIC = YtmClientIdentity("ANDROID_MUSIC", "7.27.52", "21", "com.google.android.apps.youtube.music/7.27.52 (Linux; U; Android 14) gzip")
+
         private const val YTM_PARAMS_SONGS = "EgWKAQIIAWoKEAkQBRAKEAMQBA=="
         private const val YTM_PARAMS_VIDEOS = "EgWKAQJQAWoKEAkQBRAKEAMQBA=="
         private const val YTM_PARAMS_ALBUMS = "EgWKAQIYAWoKEAkQBRAKEAMQBA=="
@@ -444,51 +449,49 @@ class MusicRepository {
             val origin = "https://music.youtube.com"
 
             val visitorData = ensureVisitorData()
-            val payload = org.json.JSONObject().apply {
-                put("context", org.json.JSONObject().apply {
-                    put("client", org.json.JSONObject().apply {
-                        put("clientName", YTM_CLIENT_NAME)
-                        put("clientVersion", YTM_CLIENT_VERSION)
-                        val (_, glCode) = resolveHlGl()
-                        put("hl", "en")
-                        put("gl", glCode)
-                        if (!visitorData.isNullOrBlank()) {
-                            put("visitorData", visitorData)
-                        }
+            val root = executeYtmRequest { ytmClient ->
+                val payload = org.json.JSONObject().apply {
+                    put("context", org.json.JSONObject().apply {
+                        put("client", org.json.JSONObject().apply {
+                            put("clientName", ytmClient.name)
+                            put("clientVersion", ytmClient.version)
+                            val (_, glCode) = resolveHlGl()
+                            put("hl", "en")
+                            put("gl", glCode)
+                            if (!visitorData.isNullOrBlank()) {
+                                put("visitorData", visitorData)
+                            }
+                        })
                     })
-                })
-                put("query", query)
-                if (!params.isNullOrBlank()) {
-                    put("params", params)
+                    put("query", query)
+                    if (!params.isNullOrBlank()) {
+                        put("params", params)
+                    }
                 }
-            }
 
-            val client = HttpClientProvider.client
-            val reqBuilder = okhttp3.Request.Builder()
-                .url("$origin/youtubei/v1/search")
-                .header("Content-Type", "application/json")
-                .header("User-Agent", YTM_USER_AGENT)
-                .header("Origin", origin)
-                .header("Referer", "$origin/")
-                .header("X-Origin", origin)
-                .header("X-YouTube-Client-Name", "67")
-                .header("X-YouTube-Client-Version", YTM_CLIENT_VERSION)
-            if (!visitorData.isNullOrBlank()) {
-                reqBuilder.header("X-Goog-Visitor-Id", visitorData)
-            }
+                val reqBuilder = okhttp3.Request.Builder()
+                    .url("$origin/youtubei/v1/search")
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", ytmClient.userAgent)
+                    .header("Origin", origin)
+                    .header("Referer", "$origin/")
+                    .header("X-Origin", origin)
+                    .header("X-YouTube-Client-Name", ytmClient.headerId)
+                    .header("X-YouTube-Client-Version", ytmClient.version)
+                if (!visitorData.isNullOrBlank()) {
+                    reqBuilder.header("X-Goog-Visitor-Id", visitorData)
+                }
 
-            auth.applyAuthToRequest(reqBuilder, payload, origin)
+                auth.applyAuthToRequest(reqBuilder, payload, origin)
 
-            val reqBody = payload.toString().toRequestBody("application/json".toMediaType())
-            reqBuilder.post(reqBody)
-
-            val response = client.newCall(reqBuilder.build()).execute()
-            val jsonStr = response.use { it.body?.string() } ?: return emptyList()
+                val reqBody = payload.toString().toRequestBody("application/json".toMediaType())
+                reqBuilder.post(reqBody).build()
+            } ?: return emptyList()
             val canUseNativeSongParser = params == null || params == YTM_PARAMS_SONGS || params == YTM_PARAMS_VIDEOS
             val nativeParsed = if (canUseNativeSongParser) {
-                com.xeylabs.vmusic.data.native.VmusicNativeCore.parseYtmSearch(jsonStr)
+                com.xeylabs.vmusic.data.native.VmusicNativeCore.parseYtmSearch(root.toString())
             } else null
-            nativeParsed ?: parseYtmSearchTracks(org.json.JSONObject(jsonStr))
+            nativeParsed ?: parseYtmSearchTracks(root)
         } catch (e: Exception) {
             Log.e("MusicRepository", "YTM Search exception: ${e.message}")
             emptyList()
@@ -658,34 +661,31 @@ class MusicRepository {
             val auth = com.xeylabs.vmusic.data.auth.AuthManager.getInstance()
             val origin = "https://music.youtube.com"
             val (hlCode, glCode) = resolveHlGl()
-            val payload = org.json.JSONObject().apply {
-                put("context", org.json.JSONObject().apply {
-                    put("client", org.json.JSONObject().apply {
-                        put("clientName", YTM_CLIENT_NAME)
-                        put("clientVersion", YTM_CLIENT_VERSION)
-                        put("hl", hlCode)
-                        put("gl", glCode)
+            val root = executeYtmRequest { ytmClient ->
+                val payload = org.json.JSONObject().apply {
+                    put("context", org.json.JSONObject().apply {
+                        put("client", org.json.JSONObject().apply {
+                            put("clientName", ytmClient.name)
+                            put("clientVersion", ytmClient.version)
+                            put("hl", hlCode)
+                            put("gl", glCode)
+                        })
                     })
-                })
-                put("input", query.trim())
+                    put("input", query.trim())
+                }
+                val reqBuilder = okhttp3.Request.Builder()
+                    .url("$origin/youtubei/v1/music/get_search_suggestions")
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", ytmClient.userAgent)
+                    .header("Origin", origin)
+                    .header("Referer", "$origin/")
+                    .header("X-Origin", origin)
+                    .header("X-YouTube-Client-Name", ytmClient.headerId)
+                    .header("X-YouTube-Client-Version", ytmClient.version)
+                auth.applyAuthToRequest(reqBuilder, payload, origin)
+                reqBuilder.post(payload.toString().toRequestBody("application/json".toMediaType())).build()
             }
-            val reqBuilder = okhttp3.Request.Builder()
-                .url("$origin/youtubei/v1/music/get_search_suggestions")
-                .header("Content-Type", "application/json")
-                .header("User-Agent", YTM_USER_AGENT)
-                .header("Origin", origin)
-                .header("Referer", "$origin/")
-                .header("X-Origin", origin)
-                .header("X-YouTube-Client-Name", "67")
-                .header("X-YouTube-Client-Version", YTM_CLIENT_VERSION)
-            auth.applyAuthToRequest(reqBuilder, payload, origin)
-            reqBuilder.post(payload.toString().toRequestBody("application/json".toMediaType()))
-
-            val jsonStr = HttpClientProvider.client.newCall(reqBuilder.build()).execute().use { resp ->
-                if (resp.isSuccessful) resp.body?.string() else null
-            }
-            if (!jsonStr.isNullOrBlank()) {
-                val root = org.json.JSONObject(jsonStr)
+            if (root != null) {
                 val sections = root.optJSONArray("contents")
                 if (sections != null) {
                     val out = ArrayList<String>(10)
@@ -955,51 +955,47 @@ class MusicRepository {
             val visitorData = ensureVisitorData()
             val (hlCode, glCode) = resolveHlGl()
 
-            val payload = org.json.JSONObject().apply {
-                put("context", org.json.JSONObject().apply {
-                    put("client", org.json.JSONObject().apply {
-                        put("clientName", YTM_CLIENT_NAME)
-                        put("clientVersion", YTM_CLIENT_VERSION)
-                        put("hl", hlCode)
-                        put("gl", glCode)
-                        if (!visitorData.isNullOrBlank()) {
-                            put("visitorData", visitorData)
-                        }
+            val root = executeYtmRequest { ytmClient ->
+                val payload = org.json.JSONObject().apply {
+                    put("context", org.json.JSONObject().apply {
+                        put("client", org.json.JSONObject().apply {
+                            put("clientName", ytmClient.name)
+                            put("clientVersion", ytmClient.version)
+                            put("hl", hlCode)
+                            put("gl", glCode)
+                            if (!visitorData.isNullOrBlank()) {
+                                put("visitorData", visitorData)
+                            }
+                        })
                     })
-                })
-                if (!videoId.isNullOrBlank()) {
-                    put("videoId", videoId)
+                    if (!videoId.isNullOrBlank()) {
+                        put("videoId", videoId)
+                    }
+                    if (cleanPid.isNotBlank()) {
+                        put("playlistId", cleanPid)
+                    }
+                    put("isAudioOnly", true)
+                    put("enablePersistentPlaylistPanel", true)
                 }
-                if (cleanPid.isNotBlank()) {
-                    put("playlistId", cleanPid)
+
+                val reqBuilder = okhttp3.Request.Builder()
+                    .url("$origin/youtubei/v1/next")
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", ytmClient.userAgent)
+                    .header("Origin", origin)
+                    .header("Referer", "$origin/")
+                    .header("X-Origin", origin)
+                    .header("X-YouTube-Client-Name", ytmClient.headerId)
+                    .header("X-YouTube-Client-Version", ytmClient.version)
+                if (!visitorData.isNullOrBlank()) {
+                    reqBuilder.header("X-Goog-Visitor-Id", visitorData)
                 }
-                put("isAudioOnly", true)
-                put("enablePersistentPlaylistPanel", true)
-            }
 
-            val reqBuilder = okhttp3.Request.Builder()
-                .url("$origin/youtubei/v1/next")
-                .header("Content-Type", "application/json")
-                .header("User-Agent", YTM_USER_AGENT)
-                .header("Origin", origin)
-                .header("Referer", "$origin/")
-                .header("X-Origin", origin)
-                .header("X-YouTube-Client-Name", "67")
-                .header("X-YouTube-Client-Version", YTM_CLIENT_VERSION)
-            if (!visitorData.isNullOrBlank()) {
-                reqBuilder.header("X-Goog-Visitor-Id", visitorData)
-            }
+                auth.applyAuthToRequest(reqBuilder, payload, origin)
+                reqBuilder.post(payload.toString().toRequestBody("application/json".toMediaType())).build()
+            } ?: return@withContext emptyList()
 
-            auth.applyAuthToRequest(reqBuilder, payload, origin)
-            reqBuilder.post(payload.toString().toRequestBody("application/json".toMediaType()))
-
-            val jsonStr = HttpClientProvider.client.newCall(reqBuilder.build()).execute().use { resp ->
-                if (!resp.isSuccessful) return@withContext emptyList()
-                resp.body?.string().orEmpty()
-            }
-            if (jsonStr.isBlank()) return@withContext emptyList()
-
-            val parsed = parseWatchNextQueueItems(org.json.JSONObject(jsonStr), excludeVideoId = null)
+            val parsed = parseWatchNextQueueItems(root, excludeVideoId = null)
             if (parsed.isNotEmpty()) return@withContext parsed
         } catch (e: Exception) {
             Log.e("MusicRepository", "getWatchPlaylistTracks error: ${e.message}")
@@ -1024,52 +1020,47 @@ class MusicRepository {
             val auth = com.xeylabs.vmusic.data.auth.AuthManager.getInstance()
             val origin = "https://music.youtube.com"
 
-            val payload = org.json.JSONObject().apply {
-                put("context", org.json.JSONObject().apply {
-                    put("client", org.json.JSONObject().apply {
-                        put("clientName", YTM_CLIENT_NAME)
-                        put("clientVersion", YTM_CLIENT_VERSION)
-                        val (hlCode, glCode) = resolveHlGl()
-                        put("hl", hlCode)
-                        put("gl", glCode)
+            val root = executeYtmRequest { ytmClient ->
+                val payload = org.json.JSONObject().apply {
+                    put("context", org.json.JSONObject().apply {
+                        put("client", org.json.JSONObject().apply {
+                            put("clientName", ytmClient.name)
+                            put("clientVersion", ytmClient.version)
+                            val (hlCode, glCode) = resolveHlGl()
+                            put("hl", hlCode)
+                            put("gl", glCode)
+                        })
                     })
-                })
-                put("videoId", videoId)
-                put("playlistId", "RDAMVM$videoId")
-                put("isAudioOnly", true)
-                put("tunerSettingValue", tunerSetting ?: "AUTOMIX_SETTING_NORMAL")
-                put("enablePersistentPlaylistPanel", true)
-            }
+                    put("videoId", videoId)
+                    put("playlistId", "RDAMVM$videoId")
+                    put("isAudioOnly", true)
+                    put("tunerSettingValue", tunerSetting ?: "AUTOMIX_SETTING_NORMAL")
+                    put("enablePersistentPlaylistPanel", true)
+                }
 
-            val client = HttpClientProvider.client
-            val reqBuilder = okhttp3.Request.Builder()
-                .url("$origin/youtubei/v1/next")
-                .header("Content-Type", "application/json")
-                .header("User-Agent", YTM_USER_AGENT)
-                .header("Origin", origin)
-                .header("Referer", "$origin/")
-                .header("X-Origin", origin)
-                .header("X-YouTube-Client-Name", "67")
-                .header("X-YouTube-Client-Version", YTM_CLIENT_VERSION)
+                val reqBuilder = okhttp3.Request.Builder()
+                    .url("$origin/youtubei/v1/next")
+                    .header("Content-Type", "application/json")
+                    .header("User-Agent", ytmClient.userAgent)
+                    .header("Origin", origin)
+                    .header("Referer", "$origin/")
+                    .header("X-Origin", origin)
+                    .header("X-YouTube-Client-Name", ytmClient.headerId)
+                    .header("X-YouTube-Client-Version", ytmClient.version)
 
-            auth.applyAuthToRequest(reqBuilder, payload, origin)
+                auth.applyAuthToRequest(reqBuilder, payload, origin)
 
-            val reqBody = payload.toString().toRequestBody("application/json".toMediaType())
-            reqBuilder.post(reqBody)
+                val reqBody = payload.toString().toRequestBody("application/json".toMediaType())
+                reqBuilder.post(reqBody).build()
+            } ?: return@withContext emptyList()
 
-            val jsonStr = client.newCall(reqBuilder.build()).execute().use { resp ->
-                if (!resp.isSuccessful) return@withContext emptyList()
-                resp.body?.string().orEmpty()
-            }
-            if (jsonStr.isBlank()) return@withContext emptyList()
-
-            val nativeParsed = com.xeylabs.vmusic.data.native.VmusicNativeCore.parseAutomix(jsonStr, videoId)
+            val nativeParsed = com.xeylabs.vmusic.data.native.VmusicNativeCore.parseAutomix(root.toString(), videoId)
             if (nativeParsed != null && nativeParsed.isNotEmpty()) {
                 synchronized(radioCache) { radioCache.put(cacheKey, Pair(nativeParsed, now)) }
                 return@withContext nativeParsed
             }
 
-            val json = org.json.JSONObject(jsonStr)
+            val json = root
             val tabs = json.optJSONObject("contents")
                 ?.optJSONObject("singleColumnMusicWatchNextResultsRenderer")
                 ?.optJSONObject("tabbedRenderer")
@@ -1272,51 +1263,45 @@ class MusicRepository {
             val (hlCode, glCode) = resolveHlGl()
             val visitorData = ensureVisitorData()
             fun fetchBrowse(browseId: String, continuation: String? = null, params: String? = null): org.json.JSONObject? {
-                val payload = org.json.JSONObject().apply {
-                    put("context", org.json.JSONObject().apply {
-                        put("client", org.json.JSONObject().apply {
-                            put("clientName", YTM_CLIENT_NAME)
-                            put("clientVersion", YTM_CLIENT_VERSION)
-                            put("hl", hlCode)
-                            put("gl", glCode)
-                            if (!visitorData.isNullOrBlank()) {
-                                put("visitorData", visitorData)
-                            }
+                return executeYtmRequest { ytmClient ->
+                    val payload = org.json.JSONObject().apply {
+                        put("context", org.json.JSONObject().apply {
+                            put("client", org.json.JSONObject().apply {
+                                put("clientName", ytmClient.name)
+                                put("clientVersion", ytmClient.version)
+                                put("hl", hlCode)
+                                put("gl", glCode)
+                                if (!visitorData.isNullOrBlank()) {
+                                    put("visitorData", visitorData)
+                                }
+                            })
                         })
-                    })
-                    if (continuation != null) {
-                        put("continuation", continuation)
-                    } else {
-                        put("browseId", browseId)
-                        if (!params.isNullOrBlank()) {
-                            put("params", params)
+                        if (continuation != null) {
+                            put("continuation", continuation)
+                        } else {
+                            put("browseId", browseId)
+                            if (!params.isNullOrBlank()) {
+                                put("params", params)
+                            }
                         }
                     }
-                }
 
-                val reqBuilder = okhttp3.Request.Builder()
-                    .url("$origin/youtubei/v1/browse")
-                    .header("Content-Type", "application/json")
-                    .header("User-Agent", YTM_USER_AGENT)
-                    .header("Origin", origin)
-                    .header("Referer", "$origin/")
-                    .header("X-Origin", origin)
-                    .header("X-YouTube-Client-Name", "67")
-                    .header("X-YouTube-Client-Version", YTM_CLIENT_VERSION)
-                if (!visitorData.isNullOrBlank()) {
-                    reqBuilder.header("X-Goog-Visitor-Id", visitorData)
-                }
-
-                auth.applyAuthToRequest(reqBuilder, payload, origin)
-                reqBuilder.post(payload.toString().toRequestBody("application/json".toMediaType()))
-
-                client.newCall(reqBuilder.build()).execute().use { resp ->
-                    if (resp.isSuccessful) {
-                        val body = resp.body?.string() ?: return null
-                        return org.json.JSONObject(body)
+                    val reqBuilder = okhttp3.Request.Builder()
+                        .url("$origin/youtubei/v1/browse")
+                        .header("Content-Type", "application/json")
+                        .header("User-Agent", ytmClient.userAgent)
+                        .header("Origin", origin)
+                        .header("Referer", "$origin/")
+                        .header("X-Origin", origin)
+                        .header("X-YouTube-Client-Name", ytmClient.headerId)
+                        .header("X-YouTube-Client-Version", ytmClient.version)
+                    if (!visitorData.isNullOrBlank()) {
+                        reqBuilder.header("X-Goog-Visitor-Id", visitorData)
                     }
+
+                    auth.applyAuthToRequest(reqBuilder, payload, origin)
+                    reqBuilder.post(payload.toString().toRequestBody("application/json".toMediaType())).build()
                 }
-                return null
             }
 
             coroutineScope {
@@ -1963,6 +1948,24 @@ class MusicRepository {
         }
     }
 
+    private fun executeYtmRequest(buildRequest: (YtmClientIdentity) -> okhttp3.Request): org.json.JSONObject? {
+        for (client in listOf(YTM_CLIENT_WEB_REMIX, YTM_CLIENT_ANDROID_MUSIC)) {
+            try {
+                val jsonStr = HttpClientProvider.client.newCall(buildRequest(client)).execute().use { resp ->
+                    if (!resp.isSuccessful) return@use null
+                    resp.body?.string()
+                } ?: continue
+                if (jsonStr.isBlank()) continue
+                val json = org.json.JSONObject(jsonStr)
+                if (json.has("error")) continue
+                return json
+            } catch (_: Exception) {
+                continue
+            }
+        }
+        return null
+    }
+
     private fun postYtmBrowse(browseId: String, continuation: String? = null, allowAnonymous: Boolean = false): org.json.JSONObject? {
         val auth = com.xeylabs.vmusic.data.auth.AuthManager.getInstance()
         val cookie = auth.getCookie()
@@ -1971,47 +1974,42 @@ class MusicRepository {
         val origin = "https://music.youtube.com"
         val (hlCode, glCode) = resolveHlGl()
         val visitorData = ensureVisitorData()
-        val payload = org.json.JSONObject().apply {
-            put("context", org.json.JSONObject().apply {
-                put("client", org.json.JSONObject().apply {
-                    put("clientName", YTM_CLIENT_NAME)
-                    put("clientVersion", YTM_CLIENT_VERSION)
-                    put("hl", hlCode)
-                    put("gl", glCode)
-                    if (!visitorData.isNullOrBlank()) {
-                        put("visitorData", visitorData)
-                    }
+        return executeYtmRequest { ytmClient ->
+            val payload = org.json.JSONObject().apply {
+                put("context", org.json.JSONObject().apply {
+                    put("client", org.json.JSONObject().apply {
+                        put("clientName", ytmClient.name)
+                        put("clientVersion", ytmClient.version)
+                        put("hl", hlCode)
+                        put("gl", glCode)
+                        if (!visitorData.isNullOrBlank()) {
+                            put("visitorData", visitorData)
+                        }
+                    })
                 })
-            })
-            if (continuation != null) {
-                put("continuation", continuation)
-            } else {
-                put("browseId", browseId)
+                if (continuation != null) {
+                    put("continuation", continuation)
+                } else {
+                    put("browseId", browseId)
+                }
             }
-        }
 
-        val client = HttpClientProvider.client
-        val reqBuilder = okhttp3.Request.Builder()
-            .url("$origin/youtubei/v1/browse")
-            .header("Content-Type", "application/json")
-            .header("User-Agent", YTM_USER_AGENT)
-            .header("Origin", origin)
-            .header("Referer", "$origin/")
-            .header("X-Origin", origin)
-            .header("X-YouTube-Client-Name", "67")
-            .header("X-YouTube-Client-Version", YTM_CLIENT_VERSION)
-        if (!visitorData.isNullOrBlank()) {
-            reqBuilder.header("X-Goog-Visitor-Id", visitorData)
-        }
+            val reqBuilder = okhttp3.Request.Builder()
+                .url("$origin/youtubei/v1/browse")
+                .header("Content-Type", "application/json")
+                .header("User-Agent", ytmClient.userAgent)
+                .header("Origin", origin)
+                .header("Referer", "$origin/")
+                .header("X-Origin", origin)
+                .header("X-YouTube-Client-Name", ytmClient.headerId)
+                .header("X-YouTube-Client-Version", ytmClient.version)
+            if (!visitorData.isNullOrBlank()) {
+                reqBuilder.header("X-Goog-Visitor-Id", visitorData)
+            }
 
-        auth.applyAuthToRequest(reqBuilder, payload, origin)
-        val reqBody = payload.toString().toRequestBody("application/json".toMediaType())
-        reqBuilder.post(reqBody)
-
-        client.newCall(reqBuilder.build()).execute().use { resp ->
-            if (!resp.isSuccessful) return null
-            val body = resp.body?.string() ?: return null
-            return org.json.JSONObject(body)
+            auth.applyAuthToRequest(reqBuilder, payload, origin)
+            val reqBody = payload.toString().toRequestBody("application/json".toMediaType())
+            reqBuilder.post(reqBody).build()
         }
     }
 

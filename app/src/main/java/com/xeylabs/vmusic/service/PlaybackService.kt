@@ -319,6 +319,11 @@ class PlaybackService : MediaSessionService() {
         const val CUSTOM_ACTION_PLAY_CURRENT = "com.xeylabs.vmusic.CUSTOM_ACTION_PLAY_CURRENT"
         const val CUSTOM_ACTION_FAVORITE = "com.xeylabs.vmusic.CUSTOM_ACTION_FAVORITE"
         const val CUSTOM_ACTION_REPEAT = "com.xeylabs.vmusic.CUSTOM_ACTION_REPEAT"
+        const val CUSTOM_ACTION_SLEEP_TIMER_SET = "com.xeylabs.vmusic.CUSTOM_ACTION_SLEEP_TIMER_SET"
+        const val CUSTOM_ACTION_SLEEP_TIMER_CANCEL = "com.xeylabs.vmusic.CUSTOM_ACTION_SLEEP_TIMER_CANCEL"
+        const val ACTION_SET_SLEEP_TIMER = "com.xeylabs.vmusic.ACTION_SET_SLEEP_TIMER"
+        const val ACTION_CANCEL_SLEEP_TIMER = "com.xeylabs.vmusic.ACTION_CANCEL_SLEEP_TIMER"
+        const val EXTRA_SLEEP_TIMER_MINUTES = "sleep_timer_minutes"
     }
 
     @OptIn(UnstableApi::class)
@@ -589,6 +594,8 @@ class PlaybackService : MediaSessionService() {
                         .add(SessionCommand(CUSTOM_ACTION_PLAY_CURRENT, Bundle.EMPTY))
                         .add(SessionCommand(CUSTOM_ACTION_FAVORITE, Bundle.EMPTY))
                         .add(SessionCommand(CUSTOM_ACTION_REPEAT, Bundle.EMPTY))
+                        .add(SessionCommand(CUSTOM_ACTION_SLEEP_TIMER_SET, Bundle.EMPTY))
+                        .add(SessionCommand(CUSTOM_ACTION_SLEEP_TIMER_CANCEL, Bundle.EMPTY))
                         .build()
                     val playerCommands = MediaSession.ConnectionResult.DEFAULT_PLAYER_COMMANDS.buildUpon()
                         .add(Player.COMMAND_SEEK_TO_NEXT)
@@ -627,6 +634,13 @@ class PlaybackService : MediaSessionService() {
                             }
                             updateNotificationCustomLayout()
                             syncNotificationAndWidgets()
+                        }
+                        CUSTOM_ACTION_SLEEP_TIMER_SET -> {
+                            val minutes = args.getInt(EXTRA_SLEEP_TIMER_MINUTES, 0)
+                            if (minutes > 0) setSleepTimer(minutes)
+                        }
+                        CUSTOM_ACTION_SLEEP_TIMER_CANCEL -> {
+                            cancelSleepTimer()
                         }
                     }
                     return Futures.immediateFuture(SessionResult(SessionResult.RESULT_SUCCESS))
@@ -696,6 +710,35 @@ class PlaybackService : MediaSessionService() {
     private fun updateNotificationCustomLayout() {
         val session = mediaSession ?: return
         session.setCustomLayout(buildNotificationCustomLayout())
+    }
+
+    private var sleepTimerJob: Job? = null
+
+    private fun setSleepTimer(minutes: Int) {
+        sleepTimerJob?.cancel()
+        if (minutes <= 0) {
+            PlayerQueueManager.updateSleepTimerMinutesLeft(null)
+            return
+        }
+        PlayerQueueManager.updateSleepTimerMinutesLeft(minutes)
+        sleepTimerJob = serviceScope.launch {
+            var remaining = minutes
+            while (remaining > 0) {
+                delay(60_000L)
+                remaining -= 1
+                PlayerQueueManager.updateSleepTimerMinutesLeft(if (remaining > 0) remaining else null)
+            }
+            PlayerQueueManager.updateSleepTimerMinutesLeft(null)
+            player?.pause()
+            syncNotificationAndWidgets()
+            player?.let { updatePauseTimeout(it) }
+        }
+    }
+
+    private fun cancelSleepTimer() {
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
+        PlayerQueueManager.updateSleepTimerMinutesLeft(null)
     }
 
     private fun toggleCurrentTrackFavoriteFromNotification() {
@@ -1086,6 +1129,11 @@ class PlaybackService : MediaSessionService() {
             ACTION_PLAY_CURRENT -> PlayerQueueManager.currentTrack.value?.let { playTrack(it) }
             ACTION_NEXT -> player?.seekToNext()
             ACTION_PREV -> player?.seekToPrevious()
+            ACTION_SET_SLEEP_TIMER -> {
+                val minutes = intent.getIntExtra(EXTRA_SLEEP_TIMER_MINUTES, 0)
+                if (minutes > 0) setSleepTimer(minutes)
+            }
+            ACTION_CANCEL_SLEEP_TIMER -> cancelSleepTimer()
         }
         return START_STICKY
     }
@@ -1103,6 +1151,8 @@ class PlaybackService : MediaSessionService() {
         } catch (_: Exception) {}
         pauseTimeoutJob?.cancel()
         pauseTimeoutJob = null
+        sleepTimerJob?.cancel()
+        sleepTimerJob = null
         servicePlayJob?.cancel()
         servicePlayJob = null
         serviceScope.cancel()

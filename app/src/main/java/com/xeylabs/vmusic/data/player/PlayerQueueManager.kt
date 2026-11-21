@@ -44,6 +44,13 @@ object PlayerQueueManager : IPlayerQueueManager {
     @Volatile
     var sleepTimerEndOfTrack: Boolean = false
 
+    private val _sleepTimerMinutesLeft = MutableStateFlow<Int?>(null)
+    val sleepTimerMinutesLeft: StateFlow<Int?> = _sleepTimerMinutesLeft.asStateFlow()
+
+    fun updateSleepTimerMinutesLeft(value: Int?) {
+        _sleepTimerMinutesLeft.value = value
+    }
+
     private val _queueState = MutableStateFlow<List<Track>>(emptyList())
     override val queueState: StateFlow<List<Track>> = _queueState.asStateFlow()
 

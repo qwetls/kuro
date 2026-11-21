@@ -256,42 +256,57 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoadingLyrics = MutableStateFlow(false)
     val isLoadingLyrics = _isLoadingLyrics.asStateFlow()
 
-    private var sleepTimerJob: Job? = null
-    private val _sleepTimerMinutes = MutableStateFlow<Int?>(null)
-    val sleepTimerMinutes: StateFlow<Int?> = _sleepTimerMinutes.asStateFlow()
+    val sleepTimerMinutes: StateFlow<Int?> = queueManager.sleepTimerMinutesLeft
 
     private val _sleepTimerEndOfTrack = MutableStateFlow(false)
     val sleepTimerEndOfTrack: StateFlow<Boolean> = _sleepTimerEndOfTrack.asStateFlow()
 
     fun setSleepTimer(minutes: Int?, pauseAtEndOfTrack: Boolean = false) {
-        sleepTimerJob?.cancel()
         _sleepTimerEndOfTrack.value = pauseAtEndOfTrack
         queueManager.sleepTimerEndOfTrack = pauseAtEndOfTrack
         if (pauseAtEndOfTrack || minutes == null || minutes <= 0) {
-            _sleepTimerMinutes.value = null
+            sendSleepTimerCancel()
             return
         }
-        _sleepTimerMinutes.value = minutes
-        sleepTimerJob = viewModelScope.launch {
-            var remaining = minutes
-            while (remaining > 0) {
-                delay(60_000L)
-                remaining -= 1
-                _sleepTimerMinutes.value = if (remaining > 0) remaining else null
-            }
-            _sleepTimerMinutes.value = null
-            _sleepTimerEndOfTrack.value = false
-            mediaController?.pause()
-            _isPlaying.value = false
+        val controller = mediaController
+        if (controller != null) {
+            val args = Bundle().apply { putInt(PlaybackService.EXTRA_SLEEP_TIMER_MINUTES, minutes) }
+            controller.sendCustomCommand(
+                androidx.media3.session.SessionCommand(PlaybackService.CUSTOM_ACTION_SLEEP_TIMER_SET, Bundle.EMPTY),
+                args
+            )
+        } else {
+            try {
+                val serviceIntent = Intent(getApplication(), PlaybackService::class.java).apply {
+                    action = PlaybackService.ACTION_SET_SLEEP_TIMER
+                    putExtra(PlaybackService.EXTRA_SLEEP_TIMER_MINUTES, minutes)
+                }
+                getApplication<Application>().startService(serviceIntent)
+            } catch (_: Exception) {}
         }
     }
 
     fun cancelSleepTimer() {
-        sleepTimerJob?.cancel()
-        sleepTimerJob = null
-        _sleepTimerMinutes.value = null
         _sleepTimerEndOfTrack.value = false
         queueManager.sleepTimerEndOfTrack = false
+        sendSleepTimerCancel()
+    }
+
+    private fun sendSleepTimerCancel() {
+        val controller = mediaController
+        if (controller != null) {
+            controller.sendCustomCommand(
+                androidx.media3.session.SessionCommand(PlaybackService.CUSTOM_ACTION_SLEEP_TIMER_CANCEL, Bundle.EMPTY),
+                Bundle.EMPTY
+            )
+        } else {
+            try {
+                val serviceIntent = Intent(getApplication(), PlaybackService::class.java).apply {
+                    action = PlaybackService.ACTION_CANCEL_SLEEP_TIMER
+                }
+                getApplication<Application>().startService(serviceIntent)
+            } catch (_: Exception) {}
+        }
     }
 
     val queueState: StateFlow<List<Track>> = queueManager.queueState
@@ -1697,7 +1712,6 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             getApplication<Application>().unregisterReceiver(mediaActionReceiver)
         } catch (_: Exception) {}
         stopProgressTracking()
-        sleepTimerJob?.cancel()
         suggestJob?.cancel()
         genreJob?.cancel()
         searchJob?.cancel()
