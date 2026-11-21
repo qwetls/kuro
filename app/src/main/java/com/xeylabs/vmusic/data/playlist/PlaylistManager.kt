@@ -2,6 +2,7 @@ package com.xeylabs.vmusic.data.playlist
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
 import com.xeylabs.vmusic.data.model.Track
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -40,7 +41,7 @@ class PlaylistManager private constructor(context: Context) {
     }
 
     private fun loadPlaylists() {
-        val raw = prefs.getString(KEY_PLAYLISTS, "[]") ?: "[]"
+        val raw = JsonBackupPrefs.readJsonArray(prefs, KEY_PLAYLISTS) ?: "[]"
         try {
             val arr = JSONArray(raw)
             val list = mutableListOf<Playlist>()
@@ -115,13 +116,13 @@ class PlaylistManager private constructor(context: Context) {
                     }
                     arr.put(pObj)
                 }
-                prefs.edit().putString(KEY_PLAYLISTS, arr.toString()).apply()
+                JsonBackupPrefs.writeJsonArray(prefs, KEY_PLAYLISTS, arr.toString())
             } catch (_: Exception) {}
         }
     }
 
     private fun loadWatchLater() {
-        val raw = prefs.getString(KEY_WATCH_LATER, null) ?: return
+        val raw = JsonBackupPrefs.readJsonArray(prefs, KEY_WATCH_LATER) ?: return
         try {
             val arr = JSONArray(raw)
             val list = mutableListOf<Track>()
@@ -162,7 +163,7 @@ class PlaylistManager private constructor(context: Context) {
                         }
                     )
                 }
-                prefs.edit().putString(KEY_WATCH_LATER, arr.toString()).apply()
+                JsonBackupPrefs.writeJsonArray(prefs, KEY_WATCH_LATER, arr.toString())
             } catch (_: Exception) {}
         }
     }

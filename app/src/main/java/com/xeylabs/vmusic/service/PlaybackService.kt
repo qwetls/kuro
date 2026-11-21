@@ -58,6 +58,7 @@ import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import com.xeylabs.vmusic.data.auth.AuthManager
 import com.xeylabs.vmusic.data.cache.HistoryStore
+import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
 import com.xeylabs.vmusic.data.offline.OfflineMusicManager
 import java.io.File
 import com.xeylabs.vmusic.data.remote.MusicRepository
@@ -660,7 +661,7 @@ class PlaybackService : MediaSessionService() {
             ?: player?.currentMediaItem?.mediaId?.takeIf { it.isNotBlank() }
             ?: return false
         val prefs = getSharedPreferences("vmusic_favorites", Context.MODE_PRIVATE)
-        val raw = prefs.getString("fav_list", null) ?: return current?.isFavorite == true
+        val raw = JsonBackupPrefs.readJsonArray(prefs, "fav_list") ?: return current?.isFavorite == true
         return try {
             val arr = JSONArray(raw)
             (0 until arr.length()).any { arr.optJSONObject(it)?.optString("id") == mediaId }
@@ -708,7 +709,7 @@ class PlaybackService : MediaSessionService() {
             ?: return
 
         val prefs = getSharedPreferences("vmusic_favorites", Context.MODE_PRIVATE)
-        val array = try { JSONArray(prefs.getString("fav_list", "[]")) } catch (_: Exception) { JSONArray() }
+        val array = try { JSONArray(JsonBackupPrefs.readJsonArray(prefs, "fav_list") ?: "[]") } catch (_: Exception) { JSONArray() }
         val match = (0 until array.length()).firstOrNull { array.optJSONObject(it)?.optString("id") == id }
         val isNowLiked = match == null
         if (match != null) {
@@ -716,7 +717,7 @@ class PlaybackService : MediaSessionService() {
             for (index in 0 until array.length()) {
                 if (index != match) next.put(array.getJSONObject(index))
             }
-            prefs.edit().putString("fav_list", next.toString()).apply()
+            JsonBackupPrefs.writeJsonArray(prefs, "fav_list", next.toString())
         } else {
             val newEntry = JSONObject().apply {
                 put("id", id)
@@ -742,7 +743,7 @@ class PlaybackService : MediaSessionService() {
             for (index in 0 until array.length()) {
                 next.put(array.getJSONObject(index))
             }
-            prefs.edit().putString("fav_list", next.toString()).apply()
+            JsonBackupPrefs.writeJsonArray(prefs, "fav_list", next.toString())
         }
 
         if (current != null && current.id == id) {

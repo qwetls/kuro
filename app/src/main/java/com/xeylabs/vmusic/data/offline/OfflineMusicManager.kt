@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import android.provider.DocumentsContract
 import android.util.Log
+import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
 import com.xeylabs.vmusic.data.model.Track
 import com.xeylabs.vmusic.data.remote.HttpClientProvider
 import com.xeylabs.vmusic.data.remote.MusicRepository
@@ -340,7 +341,7 @@ class OfflineMusicManager private constructor(private val context: Context) {
 
     private fun loadIndex() {
         runCatching {
-            val raw = prefs.getString(KEY_INDEX, "[]") ?: "[]"
+            val raw = JsonBackupPrefs.readJsonArray(prefs, KEY_INDEX) ?: "[]"
             val arr = JSONArray(raw)
             val list = ArrayList<OfflineTrack>(arr.length())
             for (i in 0 until arr.length()) {
@@ -399,7 +400,7 @@ class OfflineMusicManager private constructor(private val context: Context) {
                     }
                 })
             }
-            prefs.edit().putString(KEY_INDEX, arr.toString()).apply()
+            JsonBackupPrefs.writeJsonArray(prefs, KEY_INDEX, arr.toString())
         }
     }
 

@@ -28,6 +28,7 @@ import coil.request.ImageRequest
 import coil.request.SuccessResult
 import com.xeylabs.vmusic.MainActivity
 import com.xeylabs.vmusic.R
+import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
 import com.xeylabs.vmusic.data.model.Track
 import com.xeylabs.vmusic.data.remote.MusicRepository
 import com.xeylabs.vmusic.service.PlaybackService
@@ -408,13 +409,13 @@ class VmusicWidgetActionReceiver : android.content.BroadcastReceiver() {
         val metadata = controller.currentMediaItem?.mediaMetadata
         val id = controller.currentMediaItem?.mediaId?.takeIf { it.isNotBlank() } ?: persisted?.id ?: return
         val prefs = context.getSharedPreferences("vmusic_favorites", Context.MODE_PRIVATE)
-        val array = try { org.json.JSONArray(prefs.getString("fav_list", "[]")) } catch (_: Exception) { org.json.JSONArray() }
+        val array = try { org.json.JSONArray(JsonBackupPrefs.readJsonArray(prefs, "fav_list") ?: "[]") } catch (_: Exception) { org.json.JSONArray() }
         val match = (0 until array.length()).firstOrNull { array.optJSONObject(it)?.optString("id") == id }
         val isNowLiked = match == null
         if (match != null) {
             val next = org.json.JSONArray()
             for (index in 0 until array.length()) if (index != match) next.put(array.getJSONObject(index))
-            prefs.edit().putString("fav_list", next.toString()).apply()
+            JsonBackupPrefs.writeJsonArray(prefs, "fav_list", next.toString())
         } else {
             val newEntry = org.json.JSONObject().apply {
                 put("id", id)
@@ -429,7 +430,7 @@ class VmusicWidgetActionReceiver : android.content.BroadcastReceiver() {
             val next = org.json.JSONArray()
             next.put(newEntry)
             for (index in 0 until array.length()) next.put(array.getJSONObject(index))
-            prefs.edit().putString("fav_list", next.toString()).apply()
+            JsonBackupPrefs.writeJsonArray(prefs, "fav_list", next.toString())
         }
         if (persisted != null && persisted.id == id) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -469,7 +470,7 @@ internal fun persist(context: Context, controller: Player) {
 }
 
 private fun isFavorite(context: Context, id: String): Boolean {
-    val raw = context.getSharedPreferences("vmusic_favorites", Context.MODE_PRIVATE).getString("fav_list", "[]") ?: "[]"
+    val raw = JsonBackupPrefs.readJsonArray(context.getSharedPreferences("vmusic_favorites", Context.MODE_PRIVATE), "fav_list") ?: "[]"
     return try { val array = org.json.JSONArray(raw); (0 until array.length()).any { array.optJSONObject(it)?.optString("id") == id } } catch (_: Exception) { false }
 }
 

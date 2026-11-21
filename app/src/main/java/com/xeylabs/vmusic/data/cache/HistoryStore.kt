@@ -62,7 +62,7 @@ class HistoryStore private constructor(context: Context) {
     fun clearRecents() {
         _searchRecents.value = emptyList()
         scope.launch {
-            runCatching { prefs.edit().putString(KEY_SEARCH_RECENTS, "[]").apply() }
+            runCatching { JsonBackupPrefs.writeJsonArray(prefs, KEY_SEARCH_RECENTS, "[]") }
         }
     }
 
@@ -81,16 +81,16 @@ class HistoryStore private constructor(context: Context) {
                         put("durationSeconds", t.durationSeconds)
                     })
                 }
-                prefs.edit().putString(key, arr.toString()).apply()
+                JsonBackupPrefs.writeJsonArray(prefs, key, arr.toString())
             }
         }
     }
 
     private fun load() {
         runCatching {
-            val recents = parseTracks(prefs.getString(KEY_RECENTS, "[]") ?: "[]")
+            val recents = parseTracks(JsonBackupPrefs.readJsonArray(prefs, KEY_RECENTS) ?: "[]")
             _recentlyPlayed.value = recents
-            val searchRaw = prefs.getString(KEY_SEARCH_RECENTS, null)
+            val searchRaw = JsonBackupPrefs.readJsonArray(prefs, KEY_SEARCH_RECENTS)
             _searchRecents.value = if (searchRaw != null) parseTracks(searchRaw) else recents
         }
     }

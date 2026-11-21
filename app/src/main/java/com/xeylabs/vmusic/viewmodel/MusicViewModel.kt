@@ -24,6 +24,7 @@ import com.xeylabs.vmusic.data.model.PlaylistBrowseDetails
 import com.xeylabs.vmusic.data.model.Track
 import com.xeylabs.vmusic.data.model.YtmComment
 import com.xeylabs.vmusic.data.cache.HistoryStore
+import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
 import com.xeylabs.vmusic.data.cache.UiSnapshot
 import com.xeylabs.vmusic.data.cache.UiStateCache
 import com.xeylabs.vmusic.data.offline.OfflineMusicManager
@@ -125,7 +126,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     val favorites = _favorites.asStateFlow()
 
     private fun loadStoredFavorites(): List<Track> {
-        val jsonStr = favPrefs.getString("fav_list", null) ?: return emptyList()
+        val jsonStr = JsonBackupPrefs.readJsonArray(favPrefs, "fav_list") ?: return emptyList()
         return try {
             val arr = JSONArray(jsonStr)
             val list = mutableListOf<Track>()
@@ -166,7 +167,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
                     }
                     arr.put(obj)
                 }
-                favPrefs.edit().putString("fav_list", arr.toString()).apply()
+                JsonBackupPrefs.writeJsonArray(favPrefs, "fav_list", arr.toString())
                 onSaved?.invoke()
             } catch (e: Exception) {
                 Log.e("VmusicVM", "Save favorites error: ${e.message}")
