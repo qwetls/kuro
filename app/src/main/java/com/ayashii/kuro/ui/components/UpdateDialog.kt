@@ -91,7 +91,7 @@ fun UpdateDialog(
                             color = colors.textPrimary
                         )
                         Text(
-                            text = "Kuro v${updateInfo.versionName}",
+                            text = "vmusic v${updateInfo.versionName}",
                             style = Typography.bodySmall.copy(fontSize = 12.sp, fontWeight = FontWeight.Medium),
                             color = colors.textSecondary
                         )

@@ -134,7 +134,7 @@ private fun rememberHorizontalShelfNestedScroll(): NestedScrollConnection {
 }
 
 private fun formatMixBadgeLabel(artist: String): String {
-    val clean = artist.trim().ifBlank { "Kuro" }
+    val clean = artist.trim().ifBlank { "vmusic" }
     val primary = clean.split(",", "&", " feat.", " ft.", " x ", " X ", "•")
         .firstOrNull()?.trim().orEmpty().ifBlank { clean }
     return if (primary.length <= 16) {
@@ -1304,13 +1304,13 @@ private fun HomeTopBar(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 painter = painterResource(id = R.drawable.ic_notification),
-                contentDescription = "Kuro",
+                contentDescription = "vmusic",
                 tint = colors.textPrimary,
                 modifier = Modifier.size(26.dp)
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
-                text = "Kuro",
+                text = "vmusic",
                 style = Typography.headlineMedium.copy(
                     fontSize = 22.sp,
                     fontWeight = FontWeight.Bold

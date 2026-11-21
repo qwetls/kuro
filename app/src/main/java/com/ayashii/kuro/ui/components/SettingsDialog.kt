@@ -470,7 +470,7 @@ fun SettingsDialog(
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(
-                            text = "Kuro v${BuildConfig.VERSION_NAME} • Media3 & Jetpack Compose",
+                            text = "vmusic v${BuildConfig.VERSION_NAME} • Media3 & Jetpack Compose",
                             style = Typography.labelSmall,
                             fontSize = 11.sp,
                             color = colors.textSecondary

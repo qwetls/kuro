@@ -379,7 +379,7 @@ fun CommentsBottomSheet(
             ) {
                 if (currentAccount == null) {
                     Text(
-                        text = "Sign in to your Google account in Kuro to post comments.",
+                        text = "Sign in to your Google account in vmusic to post comments.",
                         style = Typography.bodySmall,
                         color = colors.textMuted,
                         modifier = Modifier

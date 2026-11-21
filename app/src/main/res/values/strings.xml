@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Kuro</string>
+    <string name="app_name">vmusic</string>
     <string name="tab_home">Home</string>
     <string name="tab_search">Search</string>
     <string name="tab_vibe">Vibe</string>
@@ -7,11 +7,11 @@
     <string name="search_placeholder">Search songs, artists, albums…</string>
     <string name="trending_title">Trending Now</string>
     <string name="library_title">Your Collection</string>
-    <string name="widget_compact_description">Compact Kuro music player</string>
-    <string name="widget_square_description">Mini Kuro music player</string>
-    <string name="widget_compact_name">Kuro · Compact Player</string>
-    <string name="widget_square_name">Kuro · Mini Player</string>
-    <string name="widget_placeholder_title">Open Kuro to start playing</string>
+    <string name="widget_compact_description">Compact vmusic music player</string>
+    <string name="widget_square_description">Mini vmusic music player</string>
+    <string name="widget_compact_name">vmusic · Compact Player</string>
+    <string name="widget_square_name">vmusic · Mini Player</string>
+    <string name="widget_placeholder_title">Open vmusic to start playing</string>
     <string name="widget_placeholder_artist">Your music, always close</string>
     <string name="widget_artwork_desc">Album artwork</string>
     <string name="widget_play_desc">Play or pause</string>
@@ -186,7 +186,7 @@ You</string>
     <string name="sleep_timer_active">Sleep Timer · %1$s</string>
 
     <!-- Profile & Statistics Menu -->
-    <string name="profile_default_name">Kuro Music Lover</string>
+    <string name="profile_default_name">vmusic Music Lover</string>
     <string name="profile_google_connected">Google Account Connected</string>
     <string name="profile_tap_to_login">Tap to sign in with Google</string>
     <string name="profile_switch_account">Switch / Logout Account</string>
@@ -240,7 +240,7 @@ You</string>
     <string name="settings_update">App Update</string>
     <string name="settings_update_check">Check Update</string>
     <string name="settings_update_checking">Checking GitHub…</string>
-    <string name="settings_update_latest">Kuro is up to date!</string>
+    <string name="settings_update_latest">vmusic is up to date!</string>
     <string name="settings_update_found">New version found: v%1$s</string>
     <string name="settings_about_desc">Open source, zero ads &amp; ultra lightweight</string>
 
@@ -251,16 +251,16 @@ You</string>
     <string name="update_now">Update</string>
 
     <!-- Update notifications -->
-    <string name="update_channel_name">Kuro updates</string>
-    <string name="update_channel_desc">Notifications about Kuro app updates</string>
-    <string name="update_download_title">Kuro v%1$s</string>
+    <string name="update_channel_name">vmusic updates</string>
+    <string name="update_channel_desc">Notifications about vmusic app updates</string>
+    <string name="update_download_title">vmusic v%1$s</string>
     <string name="update_download_desc">Downloading app update…</string>
     <string name="update_ready_title">Update ready to install!</string>
-    <string name="update_ready_text">Kuro v%1$s downloaded. Tap to install.</string>
-    <string name="update_ready_bigtext">Kuro v%1$s has finished downloading. Tap here to install the update now.</string>
+    <string name="update_ready_text">vmusic v%1$s downloaded. Tap to install.</string>
+    <string name="update_ready_bigtext">vmusic v%1$s has finished downloading. Tap here to install the update now.</string>
     <string name="update_install_now">Install now</string>
     <string name="update_permission_title">Allow app installs</string>
-    <string name="update_permission_text">Allow Kuro to install unknown apps, then tap the update notification again.</string>
+    <string name="update_permission_text">Allow vmusic to install unknown apps, then tap the update notification again.</string>
     <string name="update_download_failed">Update download failed. Please try again.</string>
     <string name="settings_section_audio_offline">AUDIO &amp; OFFLINE</string>
     <string name="settings_section_appearance_lang">APPEARANCE &amp; LANGUAGE</string>

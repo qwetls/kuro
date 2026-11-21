@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Kuro</string>
+    <string name="app_name">vmusic</string>
     <string name="tab_home">Beranda</string>
     <string name="tab_search">Cari</string>
     <string name="tab_vibe">Vibe</string>
@@ -7,11 +7,11 @@
     <string name="search_placeholder">Cari lagu, artis, album…</string>
     <string name="trending_title">Lagu Populer</string>
     <string name="library_title">Koleksi Anda</string>
-    <string name="widget_compact_description">Pemutar musik Kuro ringkas</string>
-    <string name="widget_square_description">Pemutar musik Kuro mini</string>
-    <string name="widget_compact_name">Kuro · Pemutar Ringkas</string>
-    <string name="widget_square_name">Kuro · Pemutar Mini</string>
-    <string name="widget_placeholder_title">Buka Kuro untuk memutar</string>
+    <string name="widget_compact_description">Pemutar musik vmusic ringkas</string>
+    <string name="widget_square_description">Pemutar musik vmusic mini</string>
+    <string name="widget_compact_name">vmusic · Pemutar Ringkas</string>
+    <string name="widget_square_name">vmusic · Pemutar Mini</string>
+    <string name="widget_placeholder_title">Buka vmusic untuk memutar</string>
     <string name="widget_placeholder_artist">Musikmu, selalu dekat</string>
     <string name="widget_artwork_desc">Gambar album</string>
     <string name="widget_play_desc">Putar atau jeda</string>
@@ -186,7 +186,7 @@ Untukmu</string>
     <string name="sleep_timer_active">Timer Tidur · %1$s</string>
 
     <!-- Profile & Statistics Menu -->
-    <string name="profile_default_name">Pecinta Musik Kuro</string>
+    <string name="profile_default_name">Pecinta Musik vmusic</string>
     <string name="profile_google_connected">Akun Google Terhubung</string>
     <string name="profile_tap_to_login">Ketuk untuk Login Google</string>
     <string name="profile_switch_account">Ganti / Keluar Akun</string>
@@ -210,7 +210,7 @@ Untukmu</string>
     <!-- Settings Dialog -->
     <string name="settings_title">Pengaturan</string>
     <string name="settings_language">Bahasa Aplikasi</string>
-    <string name="settings_language_desc">Pilih bahasa tampilan Kuro sesuai keinginanmu</string>
+    <string name="settings_language_desc">Pilih bahasa tampilan vmusic sesuai keinginanmu</string>
     <string name="settings_choose_language">Pilih Bahasa Aplikasi</string>
     <string name="lang_system">Ikuti Sistem HP</string>
     <string name="lang_id">Bahasa Indonesia</string>
@@ -240,7 +240,7 @@ Untukmu</string>
     <string name="settings_update">Pembaruan Aplikasi</string>
     <string name="settings_update_check">Cek Update</string>
     <string name="settings_update_checking">Memeriksa GitHub…</string>
-    <string name="settings_update_latest">Kuro sudah versi terbaru!</string>
+    <string name="settings_update_latest">vmusic sudah versi terbaru!</string>
     <string name="settings_update_found">Versi baru ditemukan: v%1$s</string>
     <string name="settings_about_desc">Open source, tanpa iklan &amp; super ringan</string>
 
@@ -251,16 +251,16 @@ Untukmu</string>
     <string name="update_now">Perbarui</string>
 
     <!-- Update notifications -->
-    <string name="update_channel_name">Pembaruan Kuro</string>
-    <string name="update_channel_desc">Pemberitahuan tentang pembaruan aplikasi Kuro</string>
-    <string name="update_download_title">Kuro v%1$s</string>
+    <string name="update_channel_name">Pembaruan vmusic</string>
+    <string name="update_channel_desc">Pemberitahuan tentang pembaruan aplikasi vmusic</string>
+    <string name="update_download_title">vmusic v%1$s</string>
     <string name="update_download_desc">Mengunduh pembaruan aplikasi…</string>
     <string name="update_ready_title">Pembaruan Siap Dipasang!</string>
-    <string name="update_ready_text">Kuro v%1$s berhasil diunduh. Ketuk untuk memasang.</string>
-    <string name="update_ready_bigtext">Kuro v%1$s telah selesai diunduh. Ketuk di sini untuk segera memasang pembaruan.</string>
+    <string name="update_ready_text">vmusic v%1$s berhasil diunduh. Ketuk untuk memasang.</string>
+    <string name="update_ready_bigtext">vmusic v%1$s telah selesai diunduh. Ketuk di sini untuk segera memasang pembaruan.</string>
     <string name="update_install_now">Pasang Sekarang</string>
     <string name="update_permission_title">Izinkan pemasangan aplikasi</string>
-    <string name="update_permission_text">Izinkan Kuro memasang aplikasi dari sumber tidak dikenal, lalu ketuk notifikasi pembaruan lagi.</string>
+    <string name="update_permission_text">Izinkan vmusic memasang aplikasi dari sumber tidak dikenal, lalu ketuk notifikasi pembaruan lagi.</string>
     <string name="update_download_failed">Unduhan pembaruan gagal. Silakan coba lagi.</string>
     <string name="settings_section_audio_offline">AUDIO &amp; OFFLINE</string>
     <string name="settings_section_appearance_lang">TAMPILAN &amp; BAHASA</string>
