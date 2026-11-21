@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Comprehensive Verification Harness: Kuro Android Music Player
+Comprehensive Verification Harness: vmusic Android Music Player
 Testing R2 Zero Comment Compliance, Code Integrity, Bracket Balance,
 Git Diff Cleanliness, and All Documented Bug / UX Remediations.
 """
@@ -86,7 +86,7 @@ suite.assert_true(
 
 # Test R2-02: Zero // comments in Rust core
 rust_comments_found = []
-for root, dirs, files in os.walk(os.path.join(ROOT_DIR, "kuro-core")):
+for root, dirs, files in os.walk(os.path.join(ROOT_DIR, "vmusic-core")):
     for f in sorted(files):
         if f.endswith(".rs"):
             p = os.path.join(root, f)
@@ -99,7 +99,7 @@ for root, dirs, files in os.walk(os.path.join(ROOT_DIR, "kuro-core")):
 suite.assert_true(
     len(rust_comments_found) == 0,
     "R2-02",
-    "Zero // and /// comments in Rust kuro-core source files",
+    "Zero // and /// comments in Rust vmusic-core source files",
     f"Found {len(rust_comments_found)} Rust comments: {rust_comments_found[:3]}"
 )
 
@@ -166,12 +166,12 @@ suite.assert_true(
 # Test IMM-01: Key string literals and URLs remain identical to HEAD
 expected_urls = {
     "settings.gradle.kts": "https://jitpack.io",
-    "app/src/main/java/com/ayashii/kuro/data/model/Track.kt": 'if (u.startsWith("//"))',
-    "app/src/main/java/com/ayashii/kuro/data/remote/MusicRepository.kt": 'if (u.startsWith("//"))',
-    "app/src/main/java/com/ayashii/kuro/data/remote/MusicRepository.kt": "https://music.youtube.com",
-    "app/src/main/java/com/ayashii/kuro/data/update/UpdateManager.kt": "https://api.github.com/repos/ayashiiiyo/kuro/releases/latest",
-    "kuro-core/src/innertube.rs": 'if u.starts_with("//")',
-    "kuro-core/src/translator.rs": "https://oneshot.fal.free.deepl.com/v1/translate",
+    "app/src/main/java/com/xeylabs/vmusic/data/model/Track.kt": 'if (u.startsWith("//"))',
+    "app/src/main/java/com/xeylabs/vmusic/data/remote/MusicRepository.kt": 'if (u.startsWith("//"))',
+    "app/src/main/java/com/xeylabs/vmusic/data/remote/MusicRepository.kt": "https://music.youtube.com",
+    "app/src/main/java/com/xeylabs/vmusic/data/update/UpdateManager.kt": "https://api.github.com/repos/qwetls/kuro/releases/latest",
+    "vmusic-core/src/innertube.rs": 'if u.starts_with("//")',
+    "vmusic-core/src/translator.rs": "https://oneshot.fal.free.deepl.com/v1/translate",
 }
 missing_urls = []
 for f_rel, pattern in expected_urls.items():
@@ -200,8 +200,8 @@ suite.assert_true(
 # ==============================================================================
 print(f"\n{Colors.BOLD}>>> 2. Category 1: UI & Navigation Architecture{Colors.RESET}")
 
-search_screen = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/screens/SearchScreen.kt")
-main_activity = suite.read_file("app/src/main/java/com/ayashii/kuro/MainActivity.kt")
+search_screen = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/screens/SearchScreen.kt")
+main_activity = suite.read_file("app/src/main/java/com/xeylabs/vmusic/MainActivity.kt")
 nav_stage1 = ("BackHandler(enabled = searchQuery.isNotEmpty())" in search_screen or "BackHandler(enabled = !isPlayerExpanded && searchQuery.isNotEmpty())" in search_screen) and 'searchQuery = ""' in search_screen
 nav_stage2 = ("BackHandler(enabled = isSearchActive && searchQuery.isEmpty())" in search_screen or "BackHandler(enabled = !isPlayerExpanded && isSearchActive && searchQuery.isEmpty())" in search_screen) and "isSearchActive = false" in search_screen
 nav_main = "BackHandler(enabled = isExpanded)" in main_activity and "expandPlayer(false)" in main_activity
@@ -223,7 +223,7 @@ suite.assert_true(
     f"textfield={ui01_textfield}, track_title={ui01_track_title}, headers={ui01_headers}, not_found={ui01_not_found}"
 )
 
-library_screen = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/screens/LibraryScreen.kt")
+library_screen = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/screens/LibraryScreen.kt")
 ui02_check = ("BackHandler(enabled = selectedPlaylistId != null)" in library_screen or "BackHandler(enabled = !isPlayerExpanded && selectedPlaylistId != null)" in library_screen) and "selectedPlaylistId = null" in library_screen
 suite.assert_true(
     ui02_check,
@@ -232,7 +232,7 @@ suite.assert_true(
     "BackHandler for selectedPlaylistId not found"
 )
 
-home_screen = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/screens/HomeScreen.kt")
+home_screen = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/screens/HomeScreen.kt")
 ui03_check = ('BackHandler(enabled = selectedGenre != "Semua")' in home_screen or 'BackHandler(enabled = !isPlayerExpanded && selectedGenre != "Semua")' in home_screen) and "selectedGenre = " in home_screen
 suite.assert_true(
     ui03_check,
@@ -241,7 +241,7 @@ suite.assert_true(
     "BackHandler for selectedGenre not found"
 )
 
-full_player = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/FullPlayerSheet.kt")
+full_player = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/FullPlayerSheet.kt")
 ui04_check = "BackHandler(enabled = showFullScreenLyrics)" in full_player and "showFullScreenLyrics = false" in full_player and "BackHandler(enabled = isExpanded)" in main_activity
 suite.assert_true(
     ui04_check,
@@ -250,7 +250,7 @@ suite.assert_true(
     "Lyrics or FullPlayer BackHandler missing"
 )
 
-track_options = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/TrackOptionsBottomSheet.kt")
+track_options = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/TrackOptionsBottomSheet.kt")
 has_share = "Intent(Intent.ACTION_SEND)" in track_options and "player_share" in track_options
 has_playlist = "onAddToPlaylist()" in track_options
 has_queue = "viewModel.addToQueue(track)" in track_options and "onOpenQueue()" in track_options
@@ -263,7 +263,7 @@ suite.assert_true(
     f"share={has_share}, playlist={has_playlist}, queue={has_queue}, fav={has_fav}, lyrics={has_lyrics}"
 )
 
-profile_sheet = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/ProfileMenuSheet.kt")
+profile_sheet = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/ProfileMenuSheet.kt")
 has_logout = "onLogoutClick()" in profile_sheet
 has_login = "onLoginClick()" in profile_sheet
 has_stats = "showStatsDialog = true" in profile_sheet
@@ -284,7 +284,7 @@ suite.assert_true(
     f"library={saveable_in_library}, home={saveable_in_home}, player={saveable_in_player}"
 )
 
-fullscreen_lyrics = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/FullScreenLyricsSheet.kt")
+fullscreen_lyrics = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/FullScreenLyricsSheet.kt")
 insets_in_lyrics = "statusBarsPadding()" in fullscreen_lyrics or "WindowInsets.statusBars" in fullscreen_lyrics
 insets_in_player = "statusBarsPadding()" in full_player or "navigationBarsPadding()" in full_player or "WindowInsets.navigationBars" in full_player
 suite.assert_true(
@@ -302,8 +302,8 @@ suite.assert_true(
     "isScrollInProgress guard not found"
 )
 
-widgets = suite.read_file("app/src/main/java/com/ayashii/kuro/widget/KuroWidgets.kt")
-service = suite.read_file("app/src/main/java/com/ayashii/kuro/service/PlaybackService.kt")
+widgets = suite.read_file("app/src/main/java/com/xeylabs/vmusic/widget/VmusicWidgets.kt")
+service = suite.read_file("app/src/main/java/com/xeylabs/vmusic/service/PlaybackService.kt")
 main_has_extra = "EXTRA_EXPAND_PLAYER" in main_activity and "onNewIntent" in main_activity and "expandPlayer(true)" in main_activity
 widget_has_extra = "EXTRA_EXPAND_PLAYER" in widgets
 service_has_extra = "EXTRA_EXPAND_PLAYER" in service
@@ -314,7 +314,7 @@ suite.assert_true(
     f"main={main_has_extra}, widget={widget_has_extra}, service={service_has_extra}"
 )
 
-orphaned_path = "app/src/main/java/com/ayashii/kuro/ui/components/SyncedLyricsView.kt"
+orphaned_path = "app/src/main/java/com/xeylabs/vmusic/ui/components/SyncedLyricsView.kt"
 ui11_check = not suite.file_exists(orphaned_path)
 suite.assert_true(
     ui11_check,
@@ -323,7 +323,7 @@ suite.assert_true(
     f"File {orphaned_path} still exists" if not ui11_check else ""
 )
 
-dynamic_theme = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/theme/DynamicThemeHelper.kt")
+dynamic_theme = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/theme/DynamicThemeHelper.kt")
 ui12_cache = "getCachedColor" in dynamic_theme and "colorCache" in dynamic_theme
 ui12_anim = "animateColorAsState" in dynamic_theme and "tween(durationMillis = 450" in dynamic_theme
 suite.assert_true(
@@ -338,9 +338,9 @@ suite.assert_true(
 # ==============================================================================
 print(f"\n{Colors.BOLD}>>> 3. Category 2: Playback Pipeline & Media Lifecycle{Colors.RESET}")
 
-player_queue = suite.read_file("app/src/main/java/com/ayashii/kuro/data/player/PlayerQueueManager.kt")
-music_vm = suite.read_file("app/src/main/java/com/ayashii/kuro/viewmodel/MusicViewModel.kt")
-music_repo = suite.read_file("app/src/main/java/com/ayashii/kuro/data/remote/MusicRepository.kt")
+player_queue = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/player/PlayerQueueManager.kt")
+music_vm = suite.read_file("app/src/main/java/com/xeylabs/vmusic/viewmodel/MusicViewModel.kt")
+music_repo = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/remote/MusicRepository.kt")
 
 service_decoupled = "PlayerQueueManager" in service and "getNextTrack" in service and "getPreviousTrack" in service
 suite.assert_true(
@@ -444,7 +444,7 @@ suite.assert_true(
     "playTrackAtIndex not implemented in PlayerQueueManager or MusicViewModel"
 )
 
-queue_sheet = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/QueueBottomSheet.kt")
+queue_sheet = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/QueueBottomSheet.kt")
 pb13_remove = "removeFromQueue" in player_queue and "removeFromQueue" in music_vm
 pb13_move = "moveQueueItem" in player_queue and "moveQueueItem" in music_vm
 pb13_clear = "clearUpcomingQueue" in player_queue and "clearUpcomingQueue" in music_vm
@@ -472,7 +472,7 @@ suite.assert_true(
     "Anchor position / elapsed tracking missing in MusicViewModel"
 )
 
-lyrics_model = suite.read_file("app/src/main/java/com/ayashii/kuro/data/lyrics/LyricsModel.kt")
+lyrics_model = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/lyrics/LyricsModel.kt")
 pb16_check = "fun isIntroToken(" in lyrics_model and "getCurrentLineIndex" in lyrics_model
 suite.assert_true(
     pb16_check,
@@ -490,7 +490,7 @@ suite.assert_true(
     f"field={pb17_field}, active={pb17_active}"
 )
 
-lrc_parser = suite.read_file("app/src/main/java/com/ayashii/kuro/data/lyrics/LrcParser.kt")
+lrc_parser = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/lyrics/LrcParser.kt")
 pb18_tag = "OFFSET_TAG_REGEX" in lrc_parser or "offset" in lrc_parser.lower()
 pb18_apply = "offsetMs" in lrc_parser and "timeMs =" in lrc_parser
 suite.assert_true(
@@ -500,7 +500,7 @@ suite.assert_true(
     f"tag={pb18_tag}, apply={pb18_apply}"
 )
 
-lyrics_repo = suite.read_file("app/src/main/java/com/ayashii/kuro/data/lyrics/LyricsRepository.kt")
+lyrics_repo = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/lyrics/LyricsRepository.kt")
 pb19_check = "[[[" in lyrics_repo and "]]]" in lyrics_repo and "tagRegex" in lyrics_repo
 suite.assert_true(
     pb19_check,
@@ -533,7 +533,7 @@ suite.assert_true(
     f"result={st02_result}, guard={st02_guard}"
 )
 
-settings_mgr = suite.read_file("app/src/main/java/com/ayashii/kuro/data/settings/SettingsManager.kt")
+settings_mgr = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/settings/SettingsManager.kt")
 st03_size = 'File(context.cacheDir, "lyrics_cache_v8")' in settings_mgr
 st03_count = settings_mgr.count('"lyrics_cache_v8"')
 suite.assert_true(
@@ -560,7 +560,7 @@ suite.assert_true(
     "finally block resetting _isLoadingLyrics not found in MusicViewModel"
 )
 
-login_dialog = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/LoginWebViewDialog.kt")
+login_dialog = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/LoginWebViewDialog.kt")
 st06_check = "cookieManager.removeAllCookies(null)" in login_dialog and "cookieManager.flush()" in login_dialog
 suite.assert_true(
     st06_check,
@@ -569,7 +569,7 @@ suite.assert_true(
     "removeAllCookies / flush not found in LoginWebViewDialog"
 )
 
-audio_output = suite.read_file("app/src/main/java/com/ayashii/kuro/data/audio/AudioOutputManager.kt")
+audio_output = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/audio/AudioOutputManager.kt")
 st07_check = "RECEIVER_NOT_EXPORTED" in audio_output and "registerReceiver" in audio_output
 suite.assert_true(
     st07_check,
@@ -578,8 +578,8 @@ suite.assert_true(
     "RECEIVER_NOT_EXPORTED flag not found in AudioOutputManager"
 )
 
-history_store_path = "app/src/main/java/com/ayashii/kuro/data/cache/HistoryStore.kt"
-taste_mgr_path = "app/src/main/java/com/ayashii/kuro/data/recommendation/TasteManager.kt"
+history_store_path = "app/src/main/java/com/xeylabs/vmusic/data/cache/HistoryStore.kt"
+taste_mgr_path = "app/src/main/java/com/xeylabs/vmusic/data/recommendation/TasteManager.kt"
 if os.path.exists(os.path.join(ROOT_DIR, taste_mgr_path)):
     taste_mgr = suite.read_file(taste_mgr_path)
     st08_taste = "persistTasteDataAsync" in taste_mgr and "coroutineScope.launch" in taste_mgr
@@ -691,15 +691,15 @@ suite.assert_true(
 # ==============================================================================
 # SECTION 6: KURO v3.8.9 - v3.8.12 REMEDIATIONS & BEHAVIORAL PROOFS
 # ==============================================================================
-print(f"\n{Colors.BOLD}>>> 6. Kuro v3.8.9 - v3.8.12 Remediations & Behavioral Proofs{Colors.RESET}")
+print(f"\n{Colors.BOLD}>>> 6. vmusic v3.8.9 - v3.8.12 Remediations & Behavioral Proofs{Colors.RESET}")
 
-widget_compact_xml = suite.read_file("app/src/main/res/layout/widget_kuro_compact.xml")
-widget_square_xml = suite.read_file("app/src/main/res/layout/widget_kuro_square.xml")
+widget_compact_xml = suite.read_file("app/src/main/res/layout/widget_vmusic_compact.xml")
+widget_square_xml = suite.read_file("app/src/main/res/layout/widget_vmusic_square.xml")
 widget_bg_xml = suite.read_file("app/src/main/res/drawable/widget_background.xml")
 ic_notif_xml = suite.read_file("app/src/main/res/drawable/ic_notification.xml")
-auth_mgr = suite.read_file("app/src/main/java/com/ayashii/kuro/data/auth/AuthManager.kt")
-vibe_screen = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/screens/VibeScreen.kt")
-liriqo_rs = suite.read_file("kuro-core/src/liriqo.rs")
+auth_mgr = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/auth/AuthManager.kt")
+vibe_screen = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/screens/VibeScreen.kt")
+liriqo_rs = suite.read_file("vmusic-core/src/liriqo.rs")
 
 wgt01_check = (
     'android:clipToOutline="true"' in widget_compact_xml
@@ -768,8 +768,8 @@ notif01_check = (
 suite.assert_true(
     notif01_check,
     "NOTIF-01",
-    "Official Kuro vector logo in ic_notification.xml and branded Kuro badge on notification artwork cards",
-    "Missing Kuro notification logo vector or artwork badge"
+    "Official vmusic vector logo in ic_notification.xml and branded vmusic badge on notification artwork cards",
+    "Missing vmusic notification logo vector or artwork badge"
 )
 
 bug01_check = (
@@ -784,13 +784,13 @@ suite.assert_true(
     "Missing additional bug fixes"
 )
 
-full_player = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/FullPlayerSheet.kt")
-full_lyrics = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/FullScreenLyricsSheet.kt")
-mini_player = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/MiniPlayer.kt")
-search_screen = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/screens/SearchScreen.kt")
-library_screen = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/screens/LibraryScreen.kt")
-track_item = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/TrackItem.kt")
-queue_sheet = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/QueueBottomSheet.kt")
+full_player = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/FullPlayerSheet.kt")
+full_lyrics = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/FullScreenLyricsSheet.kt")
+mini_player = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/MiniPlayer.kt")
+search_screen = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/screens/SearchScreen.kt")
+library_screen = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/screens/LibraryScreen.kt")
+track_item = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/TrackItem.kt")
+queue_sheet = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/QueueBottomSheet.kt")
 manifest_xml = suite.read_file("app/src/main/AndroidManifest.xml")
 
 back01_check = (
@@ -798,7 +798,7 @@ back01_check = (
     and "BackHandler(enabled = !isPlayerExpanded && searchQuery.isNotEmpty())" in search_screen
     and "BackHandler(enabled = !isPlayerExpanded && selectedPlaylistId != null)" in library_screen
     and "BackHandler(enabled = !isPlayerExpanded && selectedGenre != \"Semua\")" in home_screen
-    and "canNavigateBack" in suite.read_file("app/src/main/java/com/ayashii/kuro/ui/components/LoginWebViewDialog.kt")
+    and "canNavigateBack" in suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/components/LoginWebViewDialog.kt")
     and "enableOnBackInvokedCallback=\"true\"" in manifest_xml
 )
 suite.assert_true(
@@ -825,11 +825,11 @@ suite.assert_true(
     "Missing one or more touchscreen gesture handlers"
 )
 
-cargo_toml = suite.read_file("kuro-core/Cargo.toml")
-sanitizer_rs = suite.read_file("kuro-core/src/sanitizer.rs")
+cargo_toml = suite.read_file("vmusic-core/Cargo.toml")
+sanitizer_rs = suite.read_file("vmusic-core/src/sanitizer.rs")
 build_gradle = suite.read_file("app/build.gradle.kts")
 proguard_rules = suite.read_file("app/proguard-rules.pro")
-update_mgr = suite.read_file("app/src/main/java/com/ayashii/kuro/data/update/UpdateManager.kt")
+update_mgr = suite.read_file("app/src/main/java/com/xeylabs/vmusic/data/update/UpdateManager.kt")
 
 size01_check = (
     "unicode-perl" not in cargo_toml
@@ -842,11 +842,11 @@ size01_check = (
 suite.assert_true(
     size01_check,
     "SIZE-01",
-    "APK size compression: zero-regex Rust kuro-core, R8 tree-shaking, ABI splits with universal fallback, and auto-ABI UpdateManager",
+    "APK size compression: zero-regex Rust vmusic-core, R8 tree-shaking, ABI splits with universal fallback, and auto-ABI UpdateManager",
     "Missing one or more APK size compression or auto-ABI update components"
 )
 
-theme_kt = suite.read_file("app/src/main/java/com/ayashii/kuro/ui/theme/Theme.kt")
+theme_kt = suite.read_file("app/src/main/java/com/xeylabs/vmusic/ui/theme/Theme.kt")
 taste_mgr = suite.read_file(taste_mgr_path if os.path.exists(os.path.join(ROOT_DIR, taste_mgr_path)) else history_store_path)
 v3812_check = (
     "unwrap_netease_json_line" in liriqo_rs
@@ -869,7 +869,7 @@ suite.assert_true(
     "Missing one or more v3.8.12 remediation components"
 )
 
-innertube_rs = suite.read_file("kuro-core/src/innertube.rs")
+innertube_rs = suite.read_file("vmusic-core/src/innertube.rs")
 v3816_check = (
     "hasNextMediaItem(): Boolean = true" in service
     and "hasPreviousMediaItem(): Boolean = true" in service

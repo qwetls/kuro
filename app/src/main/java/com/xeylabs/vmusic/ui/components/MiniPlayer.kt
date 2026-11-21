@@ -1,0 +1,331 @@
+package com.xeylabs.vmusic.ui.components
+
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.Speaker
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.xeylabs.vmusic.R
+import com.xeylabs.vmusic.data.model.Track
+import com.xeylabs.vmusic.ui.theme.VmusicAppTheme
+import com.xeylabs.vmusic.ui.theme.VmusicMotion
+import com.xeylabs.vmusic.ui.theme.Typography
+import kotlin.math.abs
+
+@Composable
+fun MiniPlayer(
+    track: Track,
+    isPlaying: Boolean,
+    isLoading: Boolean = false,
+    progress: Float = 0f,
+    progressProvider: (() -> Float)? = null,
+    onPlayPauseClick: () -> Unit,
+    onSkipNextClick: () -> Unit,
+    onSkipPreviousClick: (() -> Unit)? = null,
+    onFavoriteClick: (() -> Unit)? = null,
+    onAudioOutputClick: (() -> Unit)? = null,
+    onSwipeDown: (() -> Unit)? = null,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = VmusicAppTheme.colors
+    val haptic = LocalHapticFeedback.current
+    var dragOffsetX by remember { mutableFloatStateOf(0f) }
+    var dragOffsetY by remember { mutableFloatStateOf(0f) }
+    var lockedAxis by remember { mutableIntStateOf(0) }
+
+    val animatedOffsetX by animateFloatAsState(
+        targetValue = dragOffsetX,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "mini_swipe_offset_x"
+    )
+
+    val animatedOffsetY by animateFloatAsState(
+        targetValue = dragOffsetY,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioNoBouncy,
+            stiffness = Spring.StiffnessMedium
+        ),
+        label = "mini_swipe_offset_y"
+    )
+
+    val solidContainerColor = if (colors.isDark) Color(0xFF141414) else Color(0xFFF6F6F6)
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .graphicsLayer {
+                translationY = (animatedOffsetY * 0.35f).coerceIn(-28f, 20f)
+            }
+            .background(solidContainerColor)
+            .clickable { onClick() }
+            .pointerInput(track.id, isPlaying) {
+                detectDragGestures(
+                    onDragStart = {
+                        dragOffsetX = 0f
+                        dragOffsetY = 0f
+                        lockedAxis = 0
+                    },
+                    onDragEnd = {
+                        if (lockedAxis == 2) {
+                            if (dragOffsetY < -44f) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
+                                lockedAxis = 0
+                                onClick()
+                            } else if (dragOffsetY > 48f) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
+                                lockedAxis = 0
+                                if (onSwipeDown != null) {
+                                    onSwipeDown()
+                                } else if (isPlaying) {
+                                    onPlayPauseClick()
+                                }
+                            } else {
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
+                                lockedAxis = 0
+                            }
+                        } else {
+                            if (dragOffsetX < -95f) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
+                                lockedAxis = 0
+                                onSkipNextClick()
+                            } else if (dragOffsetX > 95f && onSkipPreviousClick != null) {
+                                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
+                                lockedAxis = 0
+                                onSkipPreviousClick()
+                            } else {
+                                dragOffsetX = 0f
+                                dragOffsetY = 0f
+                                lockedAxis = 0
+                            }
+                        }
+                    },
+                    onDragCancel = {
+                        dragOffsetX = 0f
+                        dragOffsetY = 0f
+                        lockedAxis = 0
+                    },
+                    onDrag = { change, dragAmount ->
+                        if (lockedAxis == 0) {
+                            val nextX = dragOffsetX + dragAmount.x
+                            val nextY = dragOffsetY + dragAmount.y
+                            if (abs(nextX) > 10f || abs(nextY) > 10f) {
+                                lockedAxis = if (abs(nextY) > abs(nextX) * 1.15f) 2 else 1
+                            }
+                        }
+                        if (lockedAxis == 2) {
+                            dragOffsetY = (dragOffsetY + dragAmount.y).coerceIn(-140f, 120f)
+                            change.consume()
+                        } else {
+                            dragOffsetX = (dragOffsetX + dragAmount.x).coerceIn(-180f, 180f)
+                            change.consume()
+                        }
+                    }
+                )
+            }
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(0.8.dp)
+                .background(colors.border.copy(alpha = 0.55f))
+        )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+                .graphicsLayer {
+                    translationX = animatedOffsetX * 0.35f
+                },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier.size(44.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                AnimatedContent(
+                    targetState = track,
+                    contentKey = { it.id },
+                    transitionSpec = {
+                        fadeIn(tween(220, easing = VmusicMotion.EmphasizedDecelerate))
+                            .togetherWith(fadeOut(tween(160, easing = VmusicMotion.EmphasizedAccelerate)))
+                    },
+                    label = "mini_artwork"
+                ) { animatedTrack ->
+                    AsyncImage(
+                        model = animatedTrack.thumbnailUrlForDisplay(160),
+                        contentDescription = animatedTrack.title,
+                        modifier = Modifier
+                            .size(44.dp)
+                            .clip(RoundedCornerShape(6.dp))
+                            .background(colors.card),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(12.dp))
+
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                AnimatedContent(
+                    targetState = track,
+                    contentKey = { it.id },
+                    transitionSpec = {
+                        fadeIn(tween(220, easing = VmusicMotion.EmphasizedDecelerate))
+                            .togetherWith(fadeOut(tween(160, easing = VmusicMotion.EmphasizedAccelerate)))
+                    },
+                    label = "mini_metadata"
+                ) { animatedTrack ->
+                    Column {
+                        Text(
+                            text = animatedTrack.title,
+                            style = Typography.titleSmall.copy(fontSize = 14.sp),
+                            fontWeight = FontWeight.Bold,
+                            color = colors.textPrimary,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = animatedTrack.artist,
+                            style = Typography.bodySmall.copy(fontSize = 12.sp),
+                            fontWeight = FontWeight.Normal,
+                            color = colors.textMuted,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+
+            IconButton(
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                    if (onAudioOutputClick != null) {
+                        onAudioOutputClick()
+                    } else if (onFavoriteClick != null) {
+                        onFavoriteClick()
+                    }
+                },
+                modifier = Modifier.size(38.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Speaker,
+                    contentDescription = "Cast / Audio Output",
+                    tint = colors.textMuted,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            if (isLoading) {
+                Box(
+                    modifier = Modifier.size(40.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = colors.textPrimary,
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = onPlayPauseClick,
+                    modifier = Modifier.size(40.dp)
+                ) {
+                    Icon(
+                        painter = if (isPlaying) painterResource(R.drawable.ic_vmusic_pause) else painterResource(R.drawable.ic_vmusic_play),
+                        contentDescription = if (isPlaying) "Pause" else "Play",
+                        tint = colors.textPrimary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+
+        val trackLineColor = colors.border.copy(alpha = 0.55f)
+        val activeLineColor = colors.textPrimary
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(2.dp)
+                .drawBehind {
+                    val p = (progressProvider?.invoke() ?: progress).coerceIn(0f, 1f)
+                    drawRect(color = trackLineColor, size = size)
+                    if (p > 0f) {
+                        drawRect(
+                            color = activeLineColor,
+                            topLeft = Offset.Zero,
+                            size = Size(width = size.width * p, height = size.height)
+                        )
+                    }
+                }
+        )
+    }
+}

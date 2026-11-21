@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🖤 Kuro (黒)
+# 🖤 vmusic (黒)
 ### *Pure Sound. Zero Noise. Mastered for Android.*
 
 An ultra-lightweight, ad-free music streaming player built with **Jetpack Compose** & **AndroidX Media3**.
@@ -9,7 +9,7 @@ Designed with an uncompromising monochrome aesthetic, studio-quality 1080p artwo
 <br/>
 
 > ### 🙏 Acknowledgements & Credits
-> Kuro berdiri di atas dedikasi dan karya luar biasa dari komunitas open source:
+> vmusic berdiri di atas dedikasi dan karya luar biasa dari komunitas open source:
 > - **[NewPipeExtractor](https://github.com/TeamNewPipe/NewPipeExtractor)** oleh **Team NewPipe** ([Christian Schabesberger / @theScrabi](https://github.com/theScrabi) & tim kontributor) — Mesin utama ekstraksi stream audio dan metadata tanpa API resmi dan bebas pelacak.
 > - **[InnerTube](https://github.com/TeamNewPipe/NewPipe)** / InnerTube API Reverse Engineering — Arsitektur data YouTube & YouTube Music internal yang dirintis serta didokumentasikan oleh pengembang ekosistem open-source NewPipe dan komunitas sekitarnya.
 > 
@@ -17,15 +17,15 @@ Designed with an uncompromising monochrome aesthetic, studio-quality 1080p artwo
 
 <br/>
 
-[![Latest Release](https://img.shields.io/github/v/release/ayashiiiyo/kuro?color=white&label=Version&logo=github&style=for-the-badge)](https://github.com/ayashiiiyo/kuro/releases/latest)
-[![APK Size](https://img.shields.io/badge/APK%20Size-2.9%20MB-black?style=for-the-badge&logo=android)](https://github.com/ayashiiiyo/kuro/releases/latest)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/ayashiiiyo/kuro/build-apk.yml?branch=main&label=Build&style=for-the-badge&logo=githubactions)](https://github.com/ayashiiiyo/kuro/actions)
+[![Latest Release](https://img.shields.io/github/v/release/qwetls/kuro?color=white&label=Version&logo=github&style=for-the-badge)](https://github.com/qwetls/kuro/releases/latest)
+[![APK Size](https://img.shields.io/badge/APK%20Size-2.9%20MB-black?style=for-the-badge&logo=android)](https://github.com/qwetls/kuro/releases/latest)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/qwetls/kuro/build-apk.yml?branch=main&label=Build&style=for-the-badge&logo=githubactions)](https://github.com/qwetls/kuro/actions)
 [![License](https://img.shields.io/badge/License-GPL%20v3-black?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Android-8.0%2B%20(SDK%2026%2B)-black?style=for-the-badge&logo=android)](https://developer.android.com)
 
 <br/>
 
-[📥 **Download Latest APK (v3.5.1)**](https://github.com/ayashiiiyo/kuro/releases/latest) • [✨ **Features**](#-fitur-utama) • [🏗️ **Architecture**](#-arsitektur--performa) • [🚀 **Building**](#-kompilasi-dari-source)
+[📥 **Download Latest APK (v3.9.8)**](https://github.com/qwetls/kuro/releases/latest) • [✨ **Features**](#-fitur-utama) • [🏗️ **Architecture**](#-arsitektur--performa) • [🚀 **Building**](#-kompilasi-dari-source)
 
 ---
 
@@ -33,11 +33,11 @@ Designed with an uncompromising monochrome aesthetic, studio-quality 1080p artwo
 
 <br/>
 
-## 🎯 Mengapa Kuro?
+## 🎯 Mengapa vmusic?
 
 Sebagian besar aplikasi pemutar musik modern dipenuhi iklan, rekomendasi algoritma yang berisik, animasi berat yang memakan baterai, dan ukuran aplikasi puluhan hingga ratusan megabyte.
 
-**Kuro hadir sebagai antitesis:**
+**vmusic hadir sebagai antitesis:**
 - **🪶 2.9 MB APK:** Dipangkas dengan R8 FullMode, tanpa library membengkak.
 - **🚫 Zero Ads & Zero Tracking:** Bebas pelacak privasi, tanpa interupsi audio atau banner komersial.
 - **🔋 OLED Pure Black (`#000000`):** Hemat baterai maksimal pada layar AMOLED/OLED.
@@ -100,7 +100,7 @@ Sebagian besar aplikasi pemutar musik modern dipenuhi iklan, rekomendasi algorit
 
 ## 🏗️ Arsitektur & Performa
 
-Kuro dirancang menggunakan standar arsitektur modern Android:
+vmusic dirancang menggunakan standar arsitektur modern Android:
 
 ```
 ┌────────────────────────────────────────────────────────┐
@@ -139,12 +139,12 @@ Kuro dirancang menggunakan standar arsitektur modern Android:
 
 ## 📥 Unduh & Instalasi
 
-Unduh berkas instalasi resmi dari halaman [GitHub Releases](https://github.com/ayashiiiyo/kuro/releases/latest):
+Unduh berkas instalasi resmi dari halaman [GitHub Releases](https://github.com/qwetls/kuro/releases/latest):
 
 | Versi | Tipe | Ukuran | Keterangan |
 |---|---|---|---|
-| **Kuro Release** | `.apk` | **~2.9 MB** | *Disarankan.* Teroptimasi penuh dengan R8 FullMode |
-| **Kuro Debug** | `.apk` | ~21.0 MB | Memuat simbol debug lengkap untuk pengembang |
+| **vmusic Release** | `.apk` | **~2.9 MB** | *Disarankan.* Teroptimasi penuh dengan R8 FullMode |
+| **vmusic Debug** | `.apk` | ~21.0 MB | Memuat simbol debug lengkap untuk pengembang |
 
 > **Catatan Instalasi:** Aktifkan izin *"Install from unknown sources"* pada perangkat Android Anda jika memasang file APK secara manual untuk pertama kali.
 
@@ -160,7 +160,7 @@ Jika Anda ingin mengompilasi proyek secara lokal menggunakan Android Studio:
 
 ```bash
 # 1. Clone repositori
-git clone https://github.com/ayashiiiyo/kuro.git
+git clone https://github.com/qwetls/kuro.git
 cd kuro
 
 # 2. Berikan izin eksekusi gradlew (Linux/macOS)
@@ -181,7 +181,7 @@ app/build/outputs/apk/release/app-release.apk
 
 ## 🛡️ Privasi & Keamanan
 
-- **Zero Data Collection:** Kuro tidak memiliki server analitik, tidak mencatat riwayat pemutaran ke cloud, dan tidak menyematkan tracker pihak ketiga (Firebase, Google Analytics, dll).
+- **Zero Data Collection:** vmusic tidak memiliki server analitik, tidak mencatat riwayat pemutaran ke cloud, dan tidak menyematkan tracker pihak ketiga (Firebase, Google Analytics, dll).
 - **Safe Google Login:** Sesi login Google diproses melalui WebView lokal terisolasi di perangkat Anda. Kredensial dan cookie hanya disimpan dalam `SharedPreferences` privat perangkat.
 - **Open Source:** Seluruh kode sumber terbuka untuk diaudit secara publik.
 
@@ -198,6 +198,6 @@ Proyek ini dilisensikan di bawah lisensi **GNU General Public License v3.0 (GPL-
 <div align="center">
 
 Dibuat dengan rasa cinta terhadap kesederhanaan & musik yang jernih.  
-**Kuro (黒) — Made for pure music lovers.**
+**vmusic (黒) — Made for pure music lovers.**
 
 </div>

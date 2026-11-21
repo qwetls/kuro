@@ -14,5 +14,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "kuro"
+rootProject.name = "vmusic"
 include(":app")

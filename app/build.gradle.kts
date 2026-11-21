@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.ayashii.kuro"
+    namespace = "com.xeylabs.vmusic"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.ayashii.kuro"
+        applicationId = "com.xeylabs.vmusic"
         minSdk = 26
         targetSdk = 34
         versionCode = 68

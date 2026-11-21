@@ -1,5 +1,5 @@
 [workspace]
 members = [
-    "kuro-core",
+    "vmusic-core",
 ]
 resolver = "2"

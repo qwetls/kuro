@@ -12,7 +12,7 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
-        android:name=".KuroApp"
+        android:name=".VmusicApp"
         android:allowBackup="false"
         android:enableOnBackInvokedCallback="true"
         android:extractNativeLibs="true"
@@ -20,13 +20,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.Kuro"
+        android:theme="@style/Theme.Vmusic"
         tools:targetApi="tiramisu">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:theme="@style/Theme.Kuro">
+            android:theme="@style/Theme.Vmusic">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -34,36 +34,36 @@
         </activity>
 
         <receiver
-            android:name=".widget.KuroCompactWidgetProvider"
+            android:name=".widget.VmusicCompactWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/kuro_compact_widget_info" />
+                android:resource="@xml/vmusic_compact_widget_info" />
         </receiver>
 
         <receiver
-            android:name=".widget.KuroSquareWidgetProvider"
+            android:name=".widget.VmusicSquareWidgetProvider"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/kuro_square_widget_info" />
+                android:resource="@xml/vmusic_square_widget_info" />
         </receiver>
 
         <receiver
-            android:name=".widget.KuroWidgetActionReceiver"
+            android:name=".widget.VmusicWidgetActionReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.ayashii.kuro.widget.COMMAND" />
-                <action android:name="com.ayashii.kuro.widget.PLAY_PAUSE" />
-                <action android:name="com.ayashii.kuro.widget.NEXT" />
-                <action android:name="com.ayashii.kuro.widget.PREVIOUS" />
-                <action android:name="com.ayashii.kuro.widget.FAVORITE" />
+                <action android:name="com.xeylabs.vmusic.widget.COMMAND" />
+                <action android:name="com.xeylabs.vmusic.widget.PLAY_PAUSE" />
+                <action android:name="com.xeylabs.vmusic.widget.NEXT" />
+                <action android:name="com.xeylabs.vmusic.widget.PREVIOUS" />
+                <action android:name="com.xeylabs.vmusic.widget.FAVORITE" />
             </intent-filter>
         </receiver>
 

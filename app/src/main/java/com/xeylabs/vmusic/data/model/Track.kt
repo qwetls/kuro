@@ -1,0 +1,146 @@
+package com.xeylabs.vmusic.data.model
+
+import androidx.compose.runtime.Immutable
+
+private val THUMB_WH_REGEX = Regex("=w\\d+-h\\d+[^&?]*")
+private val THUMB_WH_CHECK_REGEX = Regex("=w\\d+-h\\d+")
+private val THUMB_S_REGEX = Regex("=s\\d+[^&?]*")
+private val THUMB_S_CHECK_REGEX = Regex("=s\\d+")
+private val THUMB_EQ_REGEX = Regex("=[^=]*$")
+
+@Immutable
+data class Track(
+    val id: String,
+    val url: String,
+    val title: String,
+    val artist: String,
+    val thumbnailUrl: String,
+    val durationSeconds: Long = 0,
+    val streamUrl: String? = null,
+    val mimeType: String? = null,
+    val isFavorite: Boolean = false,
+    val browseId: String? = null,
+    val playlistId: String? = null
+) {
+    val isCollection: Boolean
+        get() {
+            if (isArtistProfile) return false
+            val b = browseId.orEmpty()
+            val p = playlistId.orEmpty()
+            if (b.startsWith("VL") || b.startsWith("PL") || b.startsWith("MPRE") || b.startsWith("OLAK") || b.startsWith("FEmusic_")) {
+                return true
+            }
+            if (p.startsWith("RDCLAK") || p.startsWith("RDTMAK") || p.startsWith("RDAMPL") || p.startsWith("PL") || p.startsWith("OLAK") || p.startsWith("VL")) {
+                return true
+            }
+            return durationSeconds <= 0L && (b.isNotBlank() || (p.isNotBlank() && !p.startsWith("RDAMVM")))
+        }
+
+    val isArtistProfile: Boolean
+        get() {
+            val b = browseId.orEmpty()
+            return b.startsWith("UC") || b.startsWith("MPLAUC")
+        }
+
+    val highResThumbnailUrl: String
+        get() {
+            if (thumbnailUrl.isBlank()) return thumbnailUrl
+            var u = thumbnailUrl.trim()
+            if (u.startsWith("file://") || u.startsWith("content://")) {
+                return u
+            }
+            if (u.startsWith("//")) {
+                u = "https:$u"
+            }
+            if (u.contains("googleusercontent.com")) {
+                val queryIdx = u.indexOf('?')
+                val pathPart = if (queryIdx >= 0) u.substring(0, queryIdx) else u
+                val queryPart = if (queryIdx >= 0) u.substring(queryIdx) else ""
+                val resizedPath = if (pathPart.contains(THUMB_WH_CHECK_REGEX)) {
+                    pathPart.replace(THUMB_WH_REGEX, "=w1080-h1080-l90-rj")
+                } else if (pathPart.contains(THUMB_S_CHECK_REGEX)) {
+                    pathPart.replace(THUMB_S_REGEX, "=w1080-h1080-l90-rj")
+                } else if (pathPart.contains("=")) {
+                    pathPart.replace(THUMB_EQ_REGEX, "=w1080-h1080-l90-rj")
+                } else {
+                    "$pathPart=w1080-h1080-l90-rj"
+                }
+                return resizedPath + queryPart
+            }
+            if (u.contains("ytimg.com")) {
+                return u
+                    .replace("/default.jpg", "/hqdefault.jpg")
+                    .replace("/default.webp", "/hqdefault.webp")
+                    .replace("/mqdefault.jpg", "/hqdefault.jpg")
+                    .replace("/mqdefault.webp", "/hqdefault.webp")
+            }
+            return u
+        }
+
+    /** Returns a server-sized artwork URL for small UI slots to avoid downloading full artwork. */
+    fun thumbnailUrlForDisplay(maxPixels: Int): String {
+        val boundedSize = maxPixels.coerceIn(96, 1080)
+        val highRes = highResThumbnailUrl
+        return if (highRes.contains("googleusercontent.com")) {
+            highRes.replace(THUMB_WH_REGEX, "=w$boundedSize-h$boundedSize-l90-rj")
+        } else {
+            highRes
+        }
+    }
+
+    val formattedDuration: String
+        get() {
+            if (durationSeconds <= 0) return "--:--"
+            val minutes = durationSeconds / 60
+            val seconds = durationSeconds % 60
+            return String.format("%02d:%02d", minutes, seconds)
+        }
+}
+
+enum class HomeSectionType {
+    COMPACT_COLUMNS,
+    SPOTLIGHT_HERO,
+    SPEED_DIAL,
+    SIMILAR_TO,
+    WIDE_CARDS,
+    SQUARE_CAROUSEL
+}
+
+@Immutable
+data class HomeSection(
+    val title: String,
+    val subtitle: String = "",
+    val tracks: List<Track>,
+    val layoutType: HomeSectionType = HomeSectionType.SQUARE_CAROUSEL,
+    val headerAvatarUrl: String? = null,
+    val browseId: String? = null
+)
+
+@Immutable
+data class PlaylistBrowseDetails(
+    val title: String,
+    val subtitle: String,
+    val description: String = "",
+    val thumbnailUrl: String = "",
+    val tracks: List<Track> = emptyList(),
+    val browseId: String? = null,
+    val playlistId: String? = null
+)
+
+@Immutable
+data class YtmComment(
+    val id: String,
+    val authorName: String,
+    val authorAvatarUrl: String,
+    val publishedTimeText: String,
+    val text: String,
+    val likeCountText: String = "",
+    val isHearted: Boolean = false
+)
+
+@Immutable
+data class CommentsResult(
+    val comments: List<YtmComment> = emptyList(),
+    val commentCountText: String = "",
+    val createCommentParams: String? = null
+)

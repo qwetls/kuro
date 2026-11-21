@@ -14,7 +14,7 @@
 
 # R8 DEX compaction and debug log stripping for smaller release APKs
 -allowaccessmodification
--repackageclasses 'kuro.p'
+-repackageclasses 'vmusic.p'
 -assumenosideeffects class android.util.Log {
     public static int v(...);
     public static int d(...);
@@ -63,15 +63,15 @@
 -dontwarn okhttp3.**
 -dontwarn okio.**
 
-# Kuro App Models & Auth Bridge
--keep class com.ayashii.kuro.data.model.** { *; }
--keep class com.ayashii.kuro.data.auth.UserAccount { *; }
+# vmusic App Models & Auth Bridge
+-keep class com.xeylabs.vmusic.data.model.** { *; }
+-keep class com.xeylabs.vmusic.data.auth.UserAccount { *; }
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
 }
 
-# Kuro Native Core (Rust JNI)
--keepclasseswithmembernames class com.ayashii.kuro.data.native.KuroNativeCore {
+# vmusic Native Core (Rust JNI)
+-keepclasseswithmembernames class com.xeylabs.vmusic.data.native.VmusicNativeCore {
     native <methods>;
 }
--keep class com.ayashii.kuro.data.native.** { *; }
+-keep class com.xeylabs.vmusic.data.native.** { *; }

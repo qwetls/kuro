@@ -12,24 +12,24 @@
         android:strokeWidth="2.4"
         android:strokeLineCap="round"
         android:pathData="M56,28 A26,26 0 0,1 56,80" />
-    <!-- Acoustic Wave Entry & Lower K Stroke (Silver Satin) -->
+    <!-- Acoustic Wave Entry & Sweep (Silver Satin) -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#D4D4D8"
         android:strokeWidth="5.2"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M29,56 C33,56 35,48 39,48 C43,48 44,64 48,64 C51,64 53,54 57,54 L71,69" />
-    <!-- Primary Sculptural K Ribbon & Upper Eclipse Sweep (Silk White) -->
+        android:pathData="M29,56 C33,56 35,48 39,48 C43,48 44,64 48,64 C51,64 53,54 57,54" />
+    <!-- Primary Sculptural V Mark (Silk White) -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FAFAFA"
         android:strokeWidth="5.6"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M48,37 C48,47 48,61 48,71 M52,55 C57,49 63,43 71,38" />
+        android:pathData="M37,37 L54,71 L71,37" />
     <!-- Precision Harmonic Node Accent -->
     <path
         android:fillColor="#FAFAFA"
-        android:pathData="M71,38 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
+        android:pathData="M71,37 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
 </vector>
