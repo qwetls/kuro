@@ -116,8 +116,16 @@ jobs:
           VERSION_NAME: ${{ steps.apk.outputs.version }}
         run: |
           cat > RELEASE_NOTES.md <<'EOF'
-          ## vmusic v3.9.9 — YT Music-style Speed Dial
+          ## vmusic v3.9.10 — Hardening: session, library, playback & verified updates
 
+          - **Deteksi sesi login habis**:
+            - App kini mendeteksi cookie YouTube yang sudah kedaluwarsa dan menampilkan banner "Sesi login habis" dengan tombol "Login lagi", bukan diam-diam menampilkan library kosong. Error jaringan tidak pernah salah menandai sesi sebagai habis.
+          - **Cadangan otomatis library**:
+            - Setiap penyimpanan favorites, playlist, riwayat, dan indeks offline kini menyimpan salinan cadangan; kalau data utama rusak, app memulihkannya otomatis dari cadangan. Penghapusan yang disengaja tetap dihormati.
+          - **Fallback InnerTube & sleep timer di service**:
+            - Kalau client WEB_REMIX gagal, request dibaca ulang lewat client ANDROID_MUSIC sebelum menyerah. Sleep timer kini hidup di PlaybackService, jadi tetap berjalan walau app di-swipe dari recent apps.
+          - **Self-update terverifikasi SHA-256**:
+            - Setiap APK rilis kini disertai file `.sha256`; UpdateManager hanya memasang APK yang hash-nya cocok persis, dan menghapus unduhan yang gagal verifikasi. (Perlindungan ini berlaku mulai rilis ini; update dari v3.9.9 masih lewat jalur lama.)
           - **Speed Dial ala YouTube Music**:
             - Grid 3x3 kini selebar layar dengan tile persegi seukuran YT Music, sudut lebih bulat, dan judul sedikit lebih besar.
           - **Offline Audio & Thumbnails**:
@@ -145,7 +153,7 @@ jobs:
             "${{ steps.apk.outputs.arm32_path }}.sha256" \
             "${{ steps.apk.outputs.debug_path }}" \
             "${{ steps.apk.outputs.debug_path }}.sha256" \
-            --title "vmusic $RELEASE_TAG (YT Music-style Speed Dial)" \
+            --title "vmusic $RELEASE_TAG (Hardening: session, library, playback & verified updates)" \
             --notes-file RELEASE_NOTES.md \
             --latest
 
