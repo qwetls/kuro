@@ -83,6 +83,9 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val _isPlayerExpanded = MutableStateFlow(false)
     val isPlayerExpanded = _isPlayerExpanded.asStateFlow()
 
+    private val _updateDialogRequested = MutableStateFlow(false)
+    val updateDialogRequested = _updateDialogRequested.asStateFlow()
+
     private val _homeSections = MutableStateFlow<List<HomeSection>>(emptyList())
     val homeSections = _homeSections.asStateFlow()
 
@@ -1630,6 +1633,14 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
 
     fun expandPlayer(expand: Boolean) {
         _isPlayerExpanded.value = expand
+    }
+
+    fun requestUpdateDialog() {
+        _updateDialogRequested.value = true
+    }
+
+    fun consumeUpdateDialogRequest() {
+        _updateDialogRequested.value = false
     }
 
     fun syncLikedSongs() {

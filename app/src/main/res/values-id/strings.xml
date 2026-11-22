@@ -249,6 +249,8 @@ Untukmu</string>
 
     <!-- Update Dialog -->
     <string name="update_available">Pembaruan Tersedia</string>
+    <string name="update_available_title">vmusic v%1$s tersedia</string>
+    <string name="update_available_text">Versi baru sudah tersedia. Ketuk untuk melihat dan mengunduh pembaruan.</string>
     <string name="update_whats_new">Apa yang baru:</string>
     <string name="update_later">Nanti</string>
     <string name="update_now">Perbarui</string>

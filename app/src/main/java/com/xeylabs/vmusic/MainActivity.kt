@@ -140,6 +140,11 @@ class MainActivity : ComponentActivity() {
             viewModel.expandPlayer(true)
         }
 
+        if (intent?.getBooleanExtra(EXTRA_SHOW_UPDATE, false) == true) {
+            viewModel.requestUpdateDialog()
+            intent.removeExtra(EXTRA_SHOW_UPDATE)
+        }
+
         setContent {
             val themeMode by viewModel.themeMode.collectAsState()
             VmusicTheme(themeMode = themeMode) {
@@ -171,10 +176,15 @@ class MainActivity : ComponentActivity() {
         if (intent.getBooleanExtra(EXTRA_EXPAND_PLAYER, false)) {
             viewModel.expandPlayer(true)
         }
+        if (intent.getBooleanExtra(EXTRA_SHOW_UPDATE, false)) {
+            viewModel.requestUpdateDialog()
+            intent.removeExtra(EXTRA_SHOW_UPDATE)
+        }
     }
 
     companion object {
         const val EXTRA_EXPAND_PLAYER = "EXTRA_EXPAND_PLAYER"
+        const val EXTRA_SHOW_UPDATE = "EXTRA_SHOW_UPDATE"
     }
 }
 
@@ -223,6 +233,17 @@ fun MainAppScreen(viewModel: MusicViewModel, onPageChanged: (Int) -> Unit = {}) 
         if (!UpdateManager.hasCheckedThisSession) {
             UpdateManager.hasCheckedThisSession = true
             val update = UpdateManager.getInstance(context).checkForUpdate(force = false)
+            if (update != null) {
+                availableUpdate = update
+            }
+        }
+    }
+
+    val updateDialogRequested by viewModel.updateDialogRequested.collectAsState()
+    LaunchedEffect(updateDialogRequested) {
+        if (updateDialogRequested) {
+            viewModel.consumeUpdateDialogRequest()
+            val update = UpdateManager.getInstance(context).checkForUpdate(force = true, postNotification = false)
             if (update != null) {
                 availableUpdate = update
             }

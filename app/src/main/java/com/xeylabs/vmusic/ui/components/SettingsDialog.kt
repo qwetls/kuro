@@ -429,7 +429,7 @@ fun SettingsDialog(
                                     scope.launch {
                                         isCheckingUpdate = true
                                         updateStatusMessage = context.getString(R.string.settings_update_checking)
-                                        val update = UpdateManager.getInstance(context).checkForUpdate(force = true)
+                                        val update = UpdateManager.getInstance(context).checkForUpdate(force = true, postNotification = false)
                                         isCheckingUpdate = false
                                         if (update != null) {
                                             foundUpdateInfo = update

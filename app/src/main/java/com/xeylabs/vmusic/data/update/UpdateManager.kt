@@ -1,5 +1,6 @@
 package com.xeylabs.vmusic.data.update
 
+import android.Manifest
 import android.app.ActivityManager
 import android.app.DownloadManager
 import android.app.NotificationChannel
@@ -9,6 +10,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -16,8 +18,10 @@ import android.os.Process
 import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import com.xeylabs.vmusic.BuildConfig
+import com.xeylabs.vmusic.MainActivity
 import com.xeylabs.vmusic.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -47,6 +51,7 @@ class UpdateManager private constructor(private val context: Context) {
         private const val TAG = "VmusicUpdateManager"
         private const val PREFS_NAME = "vmusic_update_prefs"
         private const val KEY_LAST_CHECK_TIME = "last_check_timestamp"
+        private const val KEY_LAST_NOTIFIED_VERSION = "last_notified_version"
         private const val MIN_CHECK_INTERVAL_MS = 15 * 60 * 1000L
         private const val NOTIFICATION_CHANNEL_UPDATE = "vmusic_app_update_channel"
         private const val NOTIFICATION_ID_UPDATE = 2002
@@ -87,7 +92,7 @@ class UpdateManager private constructor(private val context: Context) {
      * ABI-matched APK (arm64-v8a or armeabi-v7a) for the user's phone, with a
      * seamless fallback to the universal -release.apk asset.
      */
-    suspend fun checkForUpdate(force: Boolean = false): UpdateInfo? = withContext(Dispatchers.IO) {
+    suspend fun checkForUpdate(force: Boolean = false, postNotification: Boolean = true): UpdateInfo? = withContext(Dispatchers.IO) {
         val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         val lastCheck = prefs.getLong(KEY_LAST_CHECK_TIME, 0L)
         val now = System.currentTimeMillis()
@@ -168,7 +173,7 @@ class UpdateManager private constructor(private val context: Context) {
                 }
 
                 if (downloadUrl != null && fileName != null) {
-                    return@withContext UpdateInfo(
+                    val updateInfo = UpdateInfo(
                         versionName = tagName,
                         releaseNotes = cleanReleaseNotes(releaseNotes),
                         downloadUrl = downloadUrl,
@@ -176,6 +181,10 @@ class UpdateManager private constructor(private val context: Context) {
                         expectedSha256 = fetchExpectedSha256(assets, fileName),
                         releasePageUrl = "https://github.com/qwetls/kuro/releases/tag/v$tagName"
                     )
+                    if (postNotification) {
+                        showUpdateAvailableNotification(updateInfo)
+                    }
+                    return@withContext updateInfo
                 }
             }
         } catch (e: Exception) {
@@ -502,6 +511,44 @@ class UpdateManager private constructor(private val context: Context) {
             .setContentIntent(pagePendingIntent)
             .build()
         notificationManager.notify(NOTIFICATION_ID_UPDATE, notification)
+    }
+
+    private fun showUpdateAvailableNotification(updateInfo: UpdateInfo) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                Log.d(TAG, "Notification permission not granted; skipping update notification")
+                return
+            }
+        }
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        if (prefs.getString(KEY_LAST_NOTIFIED_VERSION, null) == updateInfo.versionName) {
+            return
+        }
+        val notificationManager = ensureChannel() ?: return
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            putExtra(MainActivity.EXTRA_SHOW_UPDATE, true)
+        }
+        val openAppPendingIntent = PendingIntent.getActivity(
+            context,
+            NOTIFICATION_ID_UPDATE + 3,
+            openAppIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_UPDATE)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.update_available_title, updateInfo.versionName))
+            .setContentText(context.getString(R.string.update_available_text))
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(context.getString(R.string.update_available_text))
+            )
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .setContentIntent(openAppPendingIntent)
+            .build()
+        notificationManager.notify(NOTIFICATION_ID_UPDATE, notification)
+        prefs.edit().putString(KEY_LAST_NOTIFIED_VERSION, updateInfo.versionName).apply()
     }
 
     private fun createInstallIntent(file: File): Intent {
