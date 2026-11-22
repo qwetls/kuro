@@ -116,8 +116,10 @@ jobs:
           VERSION_NAME: ${{ steps.apk.outputs.version }}
         run: |
           cat > RELEASE_NOTES.md <<'EOF'
-          ## vmusic v3.9.13 — Encrypted login cookie & V² logo
+          ## vmusic v3.9.14 — V² logo in-app & notifications
 
+          - **Logo V² kini di dalam app dan notifikasi**:
+            - Logo V² kini dipakai di semua tempat, bukan cuma ikon launcher: header dashboard (di samping tulisan "vmusic"), badge kecil di tile, ikon notifikasi media dan update, dan widget. Badge logo di atas artwork notifikasi juga digambar ulang sebagai V² (lengan putih dan violet). Ikon notifikasi tetap satu warna putih, sesuai aturan Android.
           - **Cookie login YouTube terenkripsi**:
             - Cookie login kini disimpan di EncryptedSharedPreferences (Android Keystore), bukan lagi plaintext di penyimpanan app. Migrasi sekali jalan saat pertama dibuka, login aktif tidak terganggu dan tidak perlu login ulang. Logout ikut membersihkan penyimpanan terenkripsi; kalau Keystore perangkat gagal, app kembali ke cara lama tanpa crash.
           - **Logo V² baru sebagai ikon launcher**:
@@ -167,7 +169,7 @@ jobs:
             "${{ steps.apk.outputs.arm32_path }}.sha256" \
             "${{ steps.apk.outputs.debug_path }}" \
             "${{ steps.apk.outputs.debug_path }}.sha256" \
-            --title "vmusic $RELEASE_TAG (Encrypted login cookie & V² logo)" \
+            --title "vmusic $RELEASE_TAG (V² logo in-app & notifications)" \
             --notes-file RELEASE_NOTES.md \
             --latest
 
