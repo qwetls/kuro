@@ -760,6 +760,19 @@ suite.assert_true(
     "Missing multi-account profile fallback components"
 )
 
+auth02_check = (
+    "EncryptedSharedPreferences" in auth_mgr
+    and "vmusic_auth_secure" in auth_mgr
+    and "migrateCookieToSecure" in auth_mgr
+    and "MasterKey" in auth_mgr
+)
+suite.assert_true(
+    auth02_check,
+    "AUTH-02",
+    "YouTube login cookie stored in Keystore-backed EncryptedSharedPreferences with one-time plaintext migration",
+    "Missing encrypted cookie storage or plaintext migration in AuthManager"
+)
+
 notif01_check = (
     "M29,56 C33,56" in ic_notif_xml
     and "badgeNotificationArtwork" in service

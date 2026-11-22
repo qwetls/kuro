@@ -3,6 +3,8 @@ package com.xeylabs.vmusic.data.auth
 import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKey
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,6 +38,78 @@ data class UserAccount(
 class AuthManager private constructor(private val context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+
+    private val securePrefs: SharedPreferences? by lazy {
+        try {
+            val masterKey = MasterKey.Builder(context)
+                .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
+                .build()
+            EncryptedSharedPreferences.create(
+                context,
+                SECURE_PREF_NAME,
+                masterKey,
+                EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+                EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+            )
+        } catch (e: Exception) {
+            Log.e("VmusicAuth", "Encrypted prefs unavailable: ${e.message}")
+            null
+        }
+    }
+
+    private fun readSecureCookie(): String? {
+        val secure = securePrefs ?: return null
+        return try {
+            secure.getString(KEY_COOKIE, null)
+        } catch (e: Exception) {
+            Log.e("VmusicAuth", "Encrypted cookie read failed: ${e.message}")
+            null
+        }
+    }
+
+    private fun readStoredCookie(): String? {
+        val encrypted = readSecureCookie()
+        if (encrypted != null) {
+            if (prefs.contains(KEY_COOKIE)) {
+                try {
+                    prefs.edit().remove(KEY_COOKIE).apply()
+                } catch (_: Exception) {
+                }
+            }
+            return encrypted
+        }
+        val plain = try {
+            prefs.getString(KEY_COOKIE, null)
+        } catch (_: Exception) {
+            null
+        } ?: return null
+        migrateCookieToSecure(plain)
+        return plain
+    }
+
+    private fun saveStoredCookie(cookie: String) {
+        val secure = securePrefs
+        if (secure != null) {
+            try {
+                secure.edit().putString(KEY_COOKIE, cookie).apply()
+                prefs.edit().remove(KEY_COOKIE).apply()
+                return
+            } catch (e: Exception) {
+                Log.e("VmusicAuth", "Encrypted cookie write failed: ${e.message}")
+            }
+        }
+        prefs.edit().putString(KEY_COOKIE, cookie).apply()
+    }
+
+    private fun migrateCookieToSecure(cookie: String) {
+        val secure = securePrefs ?: return
+        try {
+            secure.edit().putString(KEY_COOKIE, cookie).apply()
+            prefs.edit().remove(KEY_COOKIE).apply()
+        } catch (e: Exception) {
+            Log.e("VmusicAuth", "Cookie migration failed: ${e.message}")
+        }
+    }
     private val httpClient = com.xeylabs.vmusic.data.remote.HttpClientProvider.client
     private val authScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
@@ -46,7 +120,7 @@ class AuthManager private constructor(private val context: Context) {
     val sessionExpired: StateFlow<Boolean> = _sessionExpired.asStateFlow()
 
     private fun loadStoredAccount(): UserAccount? {
-        val rawCookie = prefs.getString(KEY_COOKIE, null) ?: return null
+        val rawCookie = readStoredCookie() ?: return null
         val cookie = sanitizeCookieHeader(rawCookie)
         if (cookie.isBlank()) return null
         var name = prefs.getString(KEY_NAME, "YouTube User") ?: "YouTube User"
@@ -234,8 +308,8 @@ class AuthManager private constructor(private val context: Context) {
             authUser = resolvedAuthUser,
             pageId = resolvedPageId
         )
+        saveStoredCookie(cleanCookie)
         prefs.edit()
-            .putString(KEY_COOKIE, cleanCookie)
             .putString(KEY_AUTH_USER, resolvedAuthUser)
             .apply {
                 if (validInitialName.isNotBlank()) putString(KEY_NAME, validInitialName)
@@ -275,8 +349,8 @@ class AuthManager private constructor(private val context: Context) {
         }
         if (changed) {
             val updatedCookie = merged.entries.joinToString("; ") { "${it.key}=${it.value}" }
+            saveStoredCookie(updatedCookie)
             prefs.edit()
-                .putString(KEY_COOKIE, updatedCookie)
                 .putLong(KEY_LAST_CHECK, System.currentTimeMillis())
                 .apply()
             _authState.value = current.copy(cookie = updatedCookie)
@@ -623,6 +697,11 @@ class AuthManager private constructor(private val context: Context) {
 
     fun logout() {
         prefs.edit().clear().apply()
+        try {
+            securePrefs?.edit()?.clear()?.apply()
+        } catch (e: Exception) {
+            Log.e("VmusicAuth", "Failed to clear encrypted cookies: ${e.message}")
+        }
         _authState.value = null
         setSessionExpired(false)
         try {
@@ -635,6 +714,7 @@ class AuthManager private constructor(private val context: Context) {
 
     companion object {
         private const val PREF_NAME = "vmusic_auth_prefs"
+        private const val SECURE_PREF_NAME = "vmusic_auth_secure"
         private const val KEY_COOKIE = "yt_cookie"
         private const val KEY_NAME = "yt_name"
         private const val KEY_EMAIL = "yt_email"
