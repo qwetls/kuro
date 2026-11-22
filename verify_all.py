@@ -169,7 +169,7 @@ expected_urls = {
     "app/src/main/java/com/xeylabs/vmusic/data/model/Track.kt": 'if (u.startsWith("//"))',
     "app/src/main/java/com/xeylabs/vmusic/data/remote/MusicRepository.kt": 'if (u.startsWith("//"))',
     "app/src/main/java/com/xeylabs/vmusic/data/remote/MusicRepository.kt": "https://music.youtube.com",
-    "app/src/main/java/com/xeylabs/vmusic/data/update/UpdateManager.kt": "https://api.github.com/repos/qwetls/kuro/releases/latest",
+    "app/src/main/java/com/xeylabs/vmusic/data/update/UpdateManager.kt": "https://api.github.com/repos/qwetls/vmusic/releases/latest",
     "vmusic-core/src/innertube.rs": 'if u.starts_with("//")',
     "vmusic-core/src/translator.rs": "https://oneshot.fal.free.deepl.com/v1/translate",
 }

@@ -105,7 +105,7 @@ class UpdateManager private constructor(private val context: Context) {
         try {
             prefs.edit().putLong(KEY_LAST_CHECK_TIME, now).apply()
             val request = Request.Builder()
-                .url("https://api.github.com/repos/qwetls/kuro/releases/latest")
+                .url("https://api.github.com/repos/qwetls/vmusic/releases/latest")
                 .header("Accept", "application/vnd.github+json")
                 .header("User-Agent", "vmusic-Android-App")
                 .build()
@@ -179,7 +179,7 @@ class UpdateManager private constructor(private val context: Context) {
                         downloadUrl = downloadUrl,
                         apkFileName = fileName,
                         expectedSha256 = fetchExpectedSha256(assets, fileName),
-                        releasePageUrl = "https://github.com/qwetls/kuro/releases/tag/v$tagName"
+                        releasePageUrl = "https://github.com/qwetls/vmusic/releases/tag/v$tagName"
                     )
                     if (postNotification) {
                         showUpdateAvailableNotification(updateInfo)

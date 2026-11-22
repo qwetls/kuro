@@ -17,15 +17,15 @@ Designed with an uncompromising monochrome aesthetic, studio-quality 1080p artwo
 
 <br/>
 
-[![Latest Release](https://img.shields.io/github/v/release/qwetls/kuro?color=white&label=Version&logo=github&style=for-the-badge)](https://github.com/qwetls/kuro/releases/latest)
-[![APK Size](https://img.shields.io/badge/APK%20Size-2.9%20MB-black?style=for-the-badge&logo=android)](https://github.com/qwetls/kuro/releases/latest)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/qwetls/kuro/build-apk.yml?branch=main&label=Build&style=for-the-badge&logo=githubactions)](https://github.com/qwetls/kuro/actions)
+[![Latest Release](https://img.shields.io/github/v/release/qwetls/vmusic?color=white&label=Version&logo=github&style=for-the-badge)](https://github.com/qwetls/vmusic/releases/latest)
+[![APK Size](https://img.shields.io/badge/APK%20Size-2.9%20MB-black?style=for-the-badge&logo=android)](https://github.com/qwetls/vmusic/releases/latest)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/qwetls/vmusic/build-apk.yml?branch=main&label=Build&style=for-the-badge&logo=githubactions)](https://github.com/qwetls/vmusic/actions)
 [![License](https://img.shields.io/badge/License-GPL%20v3-black?style=for-the-badge)](LICENSE)
 [![Platform](https://img.shields.io/badge/Android-8.0%2B%20(SDK%2026%2B)-black?style=for-the-badge&logo=android)](https://developer.android.com)
 
 <br/>
 
-[📥 **Download Latest APK (v3.9.11)**](https://github.com/qwetls/kuro/releases/latest) • [✨ **Features**](#-fitur-utama) • [🏗️ **Architecture**](#-arsitektur--performa) • [🚀 **Building**](#-kompilasi-dari-source)
+[📥 **Download Latest APK (v3.9.12)**](https://github.com/qwetls/vmusic/releases/latest) • [✨ **Features**](#-fitur-utama) • [🏗️ **Architecture**](#-arsitektur--performa) • [🚀 **Building**](#-kompilasi-dari-source)
 
 ---
 
@@ -139,7 +139,7 @@ vmusic dirancang menggunakan standar arsitektur modern Android:
 
 ## 📥 Unduh & Instalasi
 
-Unduh berkas instalasi resmi dari halaman [GitHub Releases](https://github.com/qwetls/kuro/releases/latest):
+Unduh berkas instalasi resmi dari halaman [GitHub Releases](https://github.com/qwetls/vmusic/releases/latest):
 
 | Versi | Tipe | Ukuran | Keterangan |
 |---|---|---|---|
@@ -160,7 +160,7 @@ Jika Anda ingin mengompilasi proyek secara lokal menggunakan Android Studio:
 
 ```bash
 # 1. Clone repositori
-git clone https://github.com/qwetls/kuro.git
+git clone https://github.com/qwetls/vmusic.git
 cd kuro
 
 # 2. Berikan izin eksekusi gradlew (Linux/macOS)

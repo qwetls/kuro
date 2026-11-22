@@ -116,8 +116,12 @@ jobs:
           VERSION_NAME: ${{ steps.apk.outputs.version }}
         run: |
           cat > RELEASE_NOTES.md <<'EOF'
-          ## vmusic v3.9.11 — Taste profile, update notifications & V-Spatial
+          ## vmusic v3.9.12 — V-Spatial badge & repo rename
 
+          - **Badge V-Spatial di bawah foto sampul**:
+            - Logo dan nama V-Spatial kini tampil di tengah, tepat di bawah foto sampul di full player, seperti badge Dolby Atmos di Apple Music. Badge hanya muncul saat V-Spatial sedang nyala; diketuk untuk membuka Settings efek suara. Pill di baris aksi tetap seperti semula.
+          - **Repo resmi pindah ke qwetls/vmusic**:
+            - URL self-update di dalam app, halaman rilis, dan link README kini mengarah langsung ke repo baru `qwetls/vmusic` (sebelumnya `qwetls/kuro`, yang kini dialihkan).
           - **Profil selera (Taste Profile)**:
             - App kini belajar dari yang kamu putar dan like: play count per lagu dan artis, like bernilai bobot berat. Seed radio Quick Picks diambil dari lagu teratas profilmu, dan rak baru "Because You Liked" muncul di home. Tanpa data, semua berjalan seperti dulu.
           - **Notifikasi versi baru**:
@@ -159,7 +163,7 @@ jobs:
             "${{ steps.apk.outputs.arm32_path }}.sha256" \
             "${{ steps.apk.outputs.debug_path }}" \
             "${{ steps.apk.outputs.debug_path }}.sha256" \
-            --title "vmusic $RELEASE_TAG (Taste profile, update notifications & V-Spatial)" \
+            --title "vmusic $RELEASE_TAG (V-Spatial badge & repo rename)" \
             --notes-file RELEASE_NOTES.md \
             --latest
 
