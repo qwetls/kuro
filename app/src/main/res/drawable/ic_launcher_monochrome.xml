@@ -4,27 +4,18 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- V² mark (brand board 2026-11-22), single-colour themed-icon variant -->
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="2.4"
+        android:strokeWidth="9"
         android:strokeLineCap="round"
-        android:pathData="M56,28 A26,26 0 0,1 56,80" />
+        android:pathData="M32,42 L52,70" />
     <path
         android:fillColor="#00000000"
         android:strokeColor="#FFFFFF"
-        android:strokeWidth="5.2"
-        android:strokeLineCap="round"
-        android:strokeLineJoin="round"
-        android:pathData="M29,56 C33,56 35,48 39,48 C43,48 44,64 48,64 C51,64 53,54 57,54" />
-    <path
-        android:fillColor="#00000000"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="5.6"
+        android:strokeWidth="9"
         android:strokeLineCap="round"
         android:strokeLineJoin="round"
-        android:pathData="M37,37 L54,71 L71,37" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M71,37 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
+        android:pathData="M52,70 L70,42 L80,64" />
 </vector>
