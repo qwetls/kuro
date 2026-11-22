@@ -273,13 +273,13 @@ Untukmu</string>
     <string name="settings_section_appearance_lang">TAMPILAN &amp; BAHASA</string>
     <string name="settings_section_lyrics">LIRIK</string>
     <string name="settings_section_about">TENTANG</string>
-    <string name="settings_section_sound_effects">EFEK SUARA</string>
-    <string name="settings_effects_title">Efek Suara</string>
+    <string name="settings_section_sound_effects">V-SPATIAL</string>
+    <string name="settings_effects_title">V-Spatial</string>
     <string name="settings_effects_off">Mati</string>
     <string name="settings_effects_preset">Preset</string>
     <string name="settings_effects_preset_flat">Datar</string>
     <string name="settings_effects_preset_flat_desc">Tanpa pewarnaan, suara asli</string>
-    <string name="settings_effects_preset_spatial">Suara Spasial</string>
+    <string name="settings_effects_preset_spatial">V-Spatial</string>
     <string name="settings_effects_preset_spatial_desc">Panggung suara lebar dengan angkatan lembut bentuk V</string>
     <string name="settings_effects_preset_bass">Bass</string>
     <string name="settings_effects_preset_bass_desc">Hentakan bass yang dalam</string>
@@ -292,7 +292,7 @@ Untukmu</string>
     <string name="settings_effects_bass">Bass Boost</string>
     <string name="settings_effects_virtualizer">Virtualizer</string>
     <string name="settings_effects_not_supported">Efek audio tidak didukung di perangkat ini</string>
-    <string name="player_effects">Suara Spasial</string>
+    <string name="player_effects">V-Spatial</string>
     <string name="settings_download_quality">Kualitas Download Default</string>
     <string name="settings_offline_folder">Folder Musik Offline</string>
     <string name="settings_offline_folder_default">Default (Penyimpanan Internal)</string>

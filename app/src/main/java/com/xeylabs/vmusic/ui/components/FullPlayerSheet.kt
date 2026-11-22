@@ -64,7 +64,6 @@ import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.BluetoothAudio
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material.icons.outlined.PlaylistAdd
@@ -104,6 +103,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
@@ -821,7 +821,7 @@ fun FullPlayerSheet(
                     item(key = "pill_effects") {
                         val effectsOn by AudioEffectsManager.getInstance(context).enabled.collectAsState()
                         YtmActionPill(
-                            icon = Icons.Outlined.GraphicEq,
+                            painter = painterResource(R.drawable.ic_vspatial),
                             label = stringResource(R.string.player_effects),
                             isActive = effectsOn,
                             onClick = { showSettingsDialog = true }
@@ -1108,7 +1108,8 @@ fun FullPlayerSheet(
 
 @Composable
 private fun YtmActionPill(
-    icon: ImageVector,
+    icon: ImageVector? = null,
+    painter: Painter? = null,
     label: String,
     isActive: Boolean = false,
     onClick: () -> Unit
@@ -1128,12 +1129,21 @@ private fun YtmActionPill(
             .padding(horizontal = 14.dp, vertical = 7.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = label,
-            tint = if (isActive) colors.background else colors.textPrimary,
-            modifier = Modifier.size(16.dp)
-        )
+        if (painter != null) {
+            Icon(
+                painter = painter,
+                contentDescription = label,
+                tint = if (isActive) colors.background else colors.textPrimary,
+                modifier = Modifier.size(16.dp)
+            )
+        } else if (icon != null) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                tint = if (isActive) colors.background else colors.textPrimary,
+                modifier = Modifier.size(16.dp)
+            )
+        }
         Spacer(modifier = Modifier.width(6.dp))
         Text(
             text = label,

@@ -273,13 +273,13 @@ You</string>
     <string name="settings_section_appearance_lang">APPEARANCE &amp; LANGUAGE</string>
     <string name="settings_section_lyrics">LYRICS</string>
     <string name="settings_section_about">ABOUT</string>
-    <string name="settings_section_sound_effects">SOUND EFFECTS</string>
-    <string name="settings_effects_title">Sound Effects</string>
+    <string name="settings_section_sound_effects">V-SPATIAL</string>
+    <string name="settings_effects_title">V-Spatial</string>
     <string name="settings_effects_off">Off</string>
     <string name="settings_effects_preset">Preset</string>
     <string name="settings_effects_preset_flat">Flat</string>
     <string name="settings_effects_preset_flat_desc">No coloration, original sound</string>
-    <string name="settings_effects_preset_spatial">Spatial Sound</string>
+    <string name="settings_effects_preset_spatial">V-Spatial</string>
     <string name="settings_effects_preset_spatial_desc">Wide sound stage with a gentle V-shaped lift</string>
     <string name="settings_effects_preset_bass">Bass</string>
     <string name="settings_effects_preset_bass_desc">Deep low-end punch</string>
@@ -292,7 +292,7 @@ You</string>
     <string name="settings_effects_bass">Bass Boost</string>
     <string name="settings_effects_virtualizer">Virtualizer</string>
     <string name="settings_effects_not_supported">Audio effects are not supported on this device</string>
-    <string name="player_effects">Spatial Sound</string>
+    <string name="player_effects">V-Spatial</string>
     <string name="settings_download_quality">Default Download Quality</string>
     <string name="settings_offline_folder">Offline Music Folder</string>
     <string name="settings_offline_folder_default">Default (Internal Storage)</string>

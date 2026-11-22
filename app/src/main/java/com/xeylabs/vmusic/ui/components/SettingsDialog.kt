@@ -72,6 +72,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -306,7 +307,7 @@ fun SettingsDialog(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    SettingsSectionHeader(text = stringResource(R.string.settings_section_sound_effects))
+                    SettingsSectionHeader(text = stringResource(R.string.settings_section_sound_effects), icon = R.drawable.ic_vspatial)
                     SettingsGroupCard {
                         Row(
                             modifier = Modifier
@@ -998,17 +999,33 @@ fun SettingsDialog(
 }
 
 @Composable
-private fun SettingsSectionHeader(text: String) {
+private fun SettingsSectionHeader(
+    text: String,
+    icon: Int? = null
+) {
     val colors = VmusicAppTheme.colors
-    Text(
-        text = text,
-        style = Typography.labelSmall,
-        fontSize = 11.sp,
-        fontWeight = FontWeight.SemiBold,
-        letterSpacing = 1.1.sp,
-        color = colors.textMuted,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(start = 8.dp, bottom = 8.dp)
-    )
+    ) {
+        if (icon != null) {
+            Icon(
+                painter = painterResource(icon),
+                contentDescription = null,
+                tint = colors.accent,
+                modifier = Modifier.size(14.dp)
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+        }
+        Text(
+            text = text,
+            style = Typography.labelSmall,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            letterSpacing = 1.1.sp,
+            color = colors.textMuted
+        )
+    }
 }
 
 @Composable
