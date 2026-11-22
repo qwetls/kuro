@@ -297,7 +297,7 @@ class PlaybackService : MediaSessionService() {
         private const val TAG = "VmusicPlaybackService"
         private const val PAUSE_TIMEOUT_MS = 5 * 60 * 1000L
         const val CHANNEL_ID = "vmusic_playback_channel"
-        const val NOTIFICATION_ID = 1001
+        const val NOTIFICATION_ID = 1002
         const val ACTION_PLAY_PAUSE = "com.xeylabs.vmusic.ACTION_PLAY_PAUSE"
         const val ACTION_PLAY_CURRENT = "com.xeylabs.vmusic.ACTION_PLAY_CURRENT"
         const val ACTION_NEXT = "com.xeylabs.vmusic.ACTION_NEXT"

@@ -118,6 +118,8 @@ jobs:
           cat > RELEASE_NOTES.md <<'EOF'
           ## vmusic v3.9.14 — V² logo in-app & notifications
 
+          - **Ikon kecil notifikasi kini dimuat ulang (perbaikan cache)**:
+            - ID notifikasi media diganti (1001 → 1002) supaya sistem memuat ikon kecil V² dari awal, bukan menampilkan ikon lama yang tersimpan di cache. Tidak ada perubahan lain pada notifikasi.
           - **Logo V² kini di dalam app dan notifikasi**:
             - Logo V² kini dipakai di semua tempat, bukan cuma ikon launcher: header dashboard (di samping tulisan "vmusic"), badge kecil di tile, ikon notifikasi media dan update, dan widget. Badge logo di atas artwork notifikasi juga digambar ulang sebagai V² (lengan putih dan violet). Ikon notifikasi tetap satu warna putih, sesuai aturan Android.
           - **Cookie login YouTube terenkripsi**:
