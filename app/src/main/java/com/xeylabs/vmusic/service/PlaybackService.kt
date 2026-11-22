@@ -235,50 +235,33 @@ private class VmusicNotificationBitmapLoader(
             canvas.scale(logoScale, logoScale)
             canvas.translate(-21f, -20f)
 
-            val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            val vWhitePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                 style = Paint.Style.STROKE
-                strokeWidth = 3.2f
-                strokeCap = Paint.Cap.ROUND
-                color = Color.argb(185, 212, 212, 216)
-            }
-            canvas.drawArc(RectF(30f, 28f, 82f, 80f), -90f, 180f, false, arcPaint)
-
-            val wavePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = 5.4f
-                strokeCap = Paint.Cap.ROUND
-                strokeJoin = Paint.Join.ROUND
-                color = Color.argb(240, 228, 228, 231)
-            }
-            val wavePath = Path().apply {
-                moveTo(29f, 56f)
-                cubicTo(33f, 56f, 35f, 48f, 39f, 48f)
-                cubicTo(43f, 48f, 44f, 64f, 48f, 64f)
-                cubicTo(51f, 64f, 53f, 54f, 57f, 54f)
-                lineTo(71f, 69f)
-            }
-            canvas.drawPath(wavePath, wavePaint)
-
-            val kPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.STROKE
-                strokeWidth = 5.8f
+                strokeWidth = 8f
                 strokeCap = Paint.Cap.ROUND
                 strokeJoin = Paint.Join.ROUND
                 color = Color.WHITE
             }
-            val kPath = Path().apply {
-                moveTo(48f, 37f)
-                lineTo(48f, 71f)
-                moveTo(52f, 55f)
-                cubicTo(57f, 49f, 63f, 43f, 71f, 38f)
+            val vWhitePath = Path().apply {
+                moveTo(29f, 38.8f)
+                lineTo(50.7f, 69.2f)
             }
-            canvas.drawPath(kPath, kPaint)
+            canvas.drawPath(vWhitePath, vWhitePaint)
 
-            val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-                style = Paint.Style.FILL
-                color = Color.WHITE
+            val vVioletPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+                style = Paint.Style.STROKE
+                strokeWidth = 8f
+                strokeCap = Paint.Cap.ROUND
+                strokeJoin = Paint.Join.ROUND
+                color = Color.argb(255, 167, 139, 250)
             }
-            canvas.drawCircle(71f, 38f, 3.0f, dotPaint)
+            val vVioletPath = Path().apply {
+                moveTo(50.7f, 69.2f)
+                lineTo(70.2f, 38.8f)
+                lineTo(81f, 62.7f)
+            }
+            canvas.drawPath(vVioletPath, vVioletPaint)
+
             canvas.restore()
 
             out

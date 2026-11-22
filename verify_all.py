@@ -774,15 +774,15 @@ suite.assert_true(
 )
 
 notif01_check = (
-    "M29,56 C33,56" in ic_notif_xml
+    "M8.0,18.8 L29.7,49.2" in ic_notif_xml
     and "badgeNotificationArtwork" in service
     and "setSmallIcon(R.drawable.ic_notification)" in service
 )
 suite.assert_true(
     notif01_check,
     "NOTIF-01",
-    "Official vmusic vector logo in ic_notification.xml and branded vmusic badge on notification artwork cards",
-    "Missing vmusic notification logo vector or artwork badge"
+    "V2 mark vector logo in ic_notification.xml and branded V2 badge on notification artwork cards",
+    "Missing V2 notification logo vector or artwork badge"
 )
 
 bug01_check = (
