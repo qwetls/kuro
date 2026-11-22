@@ -31,7 +31,9 @@ data class UpdateInfo(
     val versionName: String,
     val releaseNotes: String,
     val downloadUrl: String,
-    val apkFileName: String
+    val apkFileName: String,
+    val expectedSha256: String?,
+    val releasePageUrl: String
 )
 
 class UpdateManager private constructor(private val context: Context) {
@@ -170,7 +172,9 @@ class UpdateManager private constructor(private val context: Context) {
                         versionName = tagName,
                         releaseNotes = cleanReleaseNotes(releaseNotes),
                         downloadUrl = downloadUrl,
-                        apkFileName = fileName
+                        apkFileName = fileName,
+                        expectedSha256 = fetchExpectedSha256(assets, fileName),
+                        releasePageUrl = "https://github.com/qwetls/kuro/releases/tag/v$tagName"
                     )
                 }
             }
@@ -178,6 +182,58 @@ class UpdateManager private constructor(private val context: Context) {
             Log.e(TAG, "Error checking for update: ${e.message}")
         }
         null
+    }
+
+    private fun fetchExpectedSha256(assets: org.json.JSONArray, apkFileName: String): String? {
+        val checksumName = "$apkFileName.sha256"
+        var checksumUrl: String? = null
+        for (i in 0 until assets.length()) {
+            val asset = assets.optJSONObject(i) ?: continue
+            if (asset.optString("name", "") == checksumName) {
+                checksumUrl = asset.optString("browser_download_url").takeIf { it.isNotBlank() }
+                break
+            }
+        }
+        val url = checksumUrl ?: return null
+        return try {
+            val request = Request.Builder()
+                .url(url)
+                .header("Accept", "application/octet-stream")
+                .header("User-Agent", "vmusic-Android-App")
+                .build()
+            val response = httpClient.newCall(request).execute()
+            if (!response.isSuccessful) {
+                response.close()
+                return null
+            }
+            val body = try {
+                response.body?.string()
+            } finally {
+                response.close()
+            } ?: return null
+            val token = body.trim().split("\\s+".toRegex()).firstOrNull() ?: return null
+            if (token.matches(Regex("[0-9a-fA-F]{64}"))) token.lowercase() else null
+        } catch (e: Exception) {
+            Log.w(TAG, "Unable to fetch update checksum: ${e.message}")
+            null
+        }
+    }
+
+    private fun computeSha256Hex(file: File): String? {
+        return try {
+            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            file.inputStream().buffered().use { stream ->
+                val buffer = ByteArray(8192)
+                var read: Int
+                while (stream.read(buffer).also { read = it } != -1) {
+                    digest.update(buffer, 0, read)
+                }
+            }
+            digest.digest().joinToString("") { "%02x".format(it) }
+        } catch (e: Exception) {
+            Log.w(TAG, "Unable to hash downloaded update: ${e.message}")
+            null
+        }
     }
 
     private fun cleanReleaseNotes(raw: String): String {
@@ -236,6 +292,18 @@ class UpdateManager private constructor(private val context: Context) {
                     ) {
                         Log.w(TAG, "Update download did not complete successfully")
                         showDownloadFailedNotification()
+                        return
+                    }
+                    val expectedHash = updateInfo.expectedSha256
+                    val actualHash = computeSha256Hex(destinationFile)
+                    if (expectedHash.isNullOrBlank() || actualHash == null ||
+                        !actualHash.equals(expectedHash, ignoreCase = true)
+                    ) {
+                        Log.w(TAG, "Update checksum mismatch or unavailable; refusing install")
+                        try {
+                            destinationFile.delete()
+                        } catch (_: Exception) {}
+                        showVerificationFailedNotification(updateInfo)
                         return
                     }
                     if (hasInstallPermission()) {
@@ -407,6 +475,31 @@ class UpdateManager private constructor(private val context: Context) {
             .setContentText(context.getString(R.string.update_download_failed))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setAutoCancel(true)
+            .build()
+        notificationManager.notify(NOTIFICATION_ID_UPDATE, notification)
+    }
+
+    private fun showVerificationFailedNotification(updateInfo: UpdateInfo) {
+        val notificationManager = ensureChannel() ?: return
+        val pageIntent = Intent(Intent.ACTION_VIEW, Uri.parse(updateInfo.releasePageUrl))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        val pagePendingIntent = PendingIntent.getActivity(
+            context,
+            NOTIFICATION_ID_UPDATE + 2,
+            pageIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        val notification = NotificationCompat.Builder(context, NOTIFICATION_CHANNEL_UPDATE)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(context.getString(R.string.update_verification_failed_title))
+            .setContentText(context.getString(R.string.update_verification_failed_text))
+            .setStyle(
+                NotificationCompat.BigTextStyle()
+                    .bigText(context.getString(R.string.update_verification_failed_text))
+            )
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setAutoCancel(true)
+            .setContentIntent(pagePendingIntent)
             .build()
         notificationManager.notify(NOTIFICATION_ID_UPDATE, notification)
     }

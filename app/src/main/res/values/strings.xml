@@ -265,6 +265,8 @@ You</string>
     <string name="update_permission_title">Allow app installs</string>
     <string name="update_permission_text">Allow vmusic to install unknown apps, then tap the update notification again.</string>
     <string name="update_download_failed">Update download failed. Please try again.</string>
+    <string name="update_verification_failed_title">Update verification failed</string>
+    <string name="update_verification_failed_text">The downloaded update did not match its checksum, so it was not installed. Tap to open the release page and install it manually.</string>
     <string name="settings_section_audio_offline">AUDIO &amp; OFFLINE</string>
     <string name="settings_section_appearance_lang">APPEARANCE &amp; LANGUAGE</string>
     <string name="settings_section_lyrics">LYRICS</string>

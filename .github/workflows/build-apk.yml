@@ -102,6 +102,13 @@ jobs:
           echo "arm32_path=$ARM32_APK" >> "$GITHUB_OUTPUT"
           echo "debug_path=$DEBUG_APK" >> "$GITHUB_OUTPUT"
 
+      - name: Generate SHA-256 checksums
+        run: |
+          sha256sum "${{ steps.apk.outputs.release_path }}" > "${{ steps.apk.outputs.release_path }}.sha256"
+          sha256sum "${{ steps.apk.outputs.arm64_path }}" > "${{ steps.apk.outputs.arm64_path }}.sha256"
+          sha256sum "${{ steps.apk.outputs.arm32_path }}" > "${{ steps.apk.outputs.arm32_path }}.sha256"
+          sha256sum "${{ steps.apk.outputs.debug_path }}" > "${{ steps.apk.outputs.debug_path }}.sha256"
+
       - name: Publish GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -131,9 +138,13 @@ jobs:
           gh release delete "$RELEASE_TAG" --yes --cleanup-tag 2>/dev/null || true
           gh release create "$RELEASE_TAG" \
             "${{ steps.apk.outputs.release_path }}" \
+            "${{ steps.apk.outputs.release_path }}.sha256" \
             "${{ steps.apk.outputs.arm64_path }}" \
+            "${{ steps.apk.outputs.arm64_path }}.sha256" \
             "${{ steps.apk.outputs.arm32_path }}" \
+            "${{ steps.apk.outputs.arm32_path }}.sha256" \
             "${{ steps.apk.outputs.debug_path }}" \
+            "${{ steps.apk.outputs.debug_path }}.sha256" \
             --title "vmusic $RELEASE_TAG (YT Music-style Speed Dial)" \
             --notes-file RELEASE_NOTES.md \
             --latest
@@ -144,9 +155,13 @@ jobs:
           name: vmusic-${{ steps.apk.outputs.version }}-APKs
           path: |
             ${{ steps.apk.outputs.release_path }}
+            ${{ steps.apk.outputs.release_path }}.sha256
             ${{ steps.apk.outputs.arm64_path }}
+            ${{ steps.apk.outputs.arm64_path }}.sha256
             ${{ steps.apk.outputs.arm32_path }}
+            ${{ steps.apk.outputs.arm32_path }}.sha256
             ${{ steps.apk.outputs.debug_path }}
+            ${{ steps.apk.outputs.debug_path }}.sha256
           retention-days: 30
 
       - name: Remove temporary signing keystore

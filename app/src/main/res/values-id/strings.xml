@@ -265,6 +265,8 @@ Untukmu</string>
     <string name="update_permission_title">Izinkan pemasangan aplikasi</string>
     <string name="update_permission_text">Izinkan vmusic memasang aplikasi dari sumber tidak dikenal, lalu ketuk notifikasi pembaruan lagi.</string>
     <string name="update_download_failed">Unduhan pembaruan gagal. Silakan coba lagi.</string>
+    <string name="update_verification_failed_title">Verifikasi pembaruan gagal</string>
+    <string name="update_verification_failed_text">Pembaruan yang diunduh tidak cocok dengan checksum-nya, jadi tidak dipasang. Ketuk untuk membuka halaman rilis dan memasangnya secara manual.</string>
     <string name="settings_section_audio_offline">AUDIO &amp; OFFLINE</string>
     <string name="settings_section_appearance_lang">TAMPILAN &amp; BAHASA</string>
     <string name="settings_section_lyrics">LIRIK</string>
