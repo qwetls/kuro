@@ -596,6 +596,31 @@ fun FullPlayerSheet(
 
                 Spacer(modifier = Modifier.height(14.dp))
 
+                val badgeEffectsOn by AudioEffectsManager.getInstance(context).enabled.collectAsState()
+                if (badgeEffectsOn) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { showSettingsDialog = true }
+                            .padding(top = 2.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_vspatial),
+                            contentDescription = stringResource(R.string.player_effects),
+                            tint = colors.accent,
+                            modifier = Modifier.size(14.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = stringResource(R.string.player_effects),
+                            style = Typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.accent
+                        )
+                    }
+                }
+
                 if (topSwitchMode == 0) {
                     LiveLyricSnippet(
                         lyricsData = sanitizedLyricsData,
