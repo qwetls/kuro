@@ -59,6 +59,7 @@ import androidx.media3.datasource.cache.SimpleCache
 import com.xeylabs.vmusic.data.auth.AuthManager
 import com.xeylabs.vmusic.data.cache.HistoryStore
 import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
+import com.xeylabs.vmusic.data.cache.TasteProfile
 import com.xeylabs.vmusic.data.offline.OfflineMusicManager
 import java.io.File
 import com.xeylabs.vmusic.data.remote.MusicRepository
@@ -788,6 +789,17 @@ class PlaybackService : MediaSessionService() {
             }
             JsonBackupPrefs.writeJsonArray(prefs, "fav_list", next.toString())
         }
+
+        val tasteTrack = current?.copy(isFavorite = isNowLiked)
+            ?: persisted?.copy(isFavorite = isNowLiked)
+            ?: Track(
+                id = id,
+                url = "",
+                title = metadata?.title?.toString().orEmpty(),
+                artist = metadata?.artist?.toString().orEmpty(),
+                thumbnailUrl = metadata?.artworkUri?.toString().orEmpty()
+            )
+        TasteProfile.getInstance(this@PlaybackService).recordLike(tasteTrack, isNowLiked)
 
         if (current != null && current.id == id) {
             PlayerQueueManager.updateCurrentTrack(current.copy(isFavorite = isNowLiked))

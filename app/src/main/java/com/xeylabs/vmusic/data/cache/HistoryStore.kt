@@ -16,6 +16,7 @@ import org.json.JSONObject
 class HistoryStore private constructor(context: Context) {
 
     private val prefs: SharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
+    private val appContext = context.applicationContext
     private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     private val _recentlyPlayed = MutableStateFlow<List<Track>>(emptyList())
@@ -37,6 +38,7 @@ class HistoryStore private constructor(context: Context) {
         if (track.id == lastRecordedId && (now - lastRecordedAt) < 20_000L) return
         lastRecordedId = track.id
         lastRecordedAt = now
+        TasteProfile.getInstance(appContext).recordPlay(track)
 
         val nextRecent = (_recentlyPlayed.value.filterNot { it.id == track.id }).toMutableList().apply {
             add(0, track)

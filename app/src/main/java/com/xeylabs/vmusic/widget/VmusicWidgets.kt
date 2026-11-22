@@ -29,6 +29,7 @@ import coil.request.SuccessResult
 import com.xeylabs.vmusic.MainActivity
 import com.xeylabs.vmusic.R
 import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
+import com.xeylabs.vmusic.data.cache.TasteProfile
 import com.xeylabs.vmusic.data.model.Track
 import com.xeylabs.vmusic.data.remote.MusicRepository
 import com.xeylabs.vmusic.service.PlaybackService
@@ -432,6 +433,15 @@ class VmusicWidgetActionReceiver : android.content.BroadcastReceiver() {
             for (index in 0 until array.length()) next.put(array.getJSONObject(index))
             JsonBackupPrefs.writeJsonArray(prefs, "fav_list", next.toString())
         }
+        val tasteTrack = persisted?.copy(isFavorite = isNowLiked)
+            ?: Track(
+                id = id,
+                url = metadata?.extras?.getString(WIDGET_SOURCE_URL_KEY).orEmpty(),
+                title = metadata?.title?.toString().orEmpty(),
+                artist = metadata?.artist?.toString().orEmpty(),
+                thumbnailUrl = metadata?.artworkUri?.toString().orEmpty()
+            )
+        TasteProfile.getInstance(context).recordLike(tasteTrack, isNowLiked)
         if (persisted != null && persisted.id == id) {
             context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
                 .edit()

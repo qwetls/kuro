@@ -25,6 +25,8 @@ import com.xeylabs.vmusic.data.model.Track
 import com.xeylabs.vmusic.data.model.YtmComment
 import com.xeylabs.vmusic.data.cache.HistoryStore
 import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
+import com.xeylabs.vmusic.data.cache.TasteArtist
+import com.xeylabs.vmusic.data.cache.TasteProfile
 import com.xeylabs.vmusic.data.cache.UiSnapshot
 import com.xeylabs.vmusic.data.cache.UiStateCache
 import com.xeylabs.vmusic.data.offline.OfflineMusicManager
@@ -202,6 +204,11 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     private val historyStore = HistoryStore.getInstance(getApplication())
     val recentlyPlayed = historyStore.recentlyPlayed
     val searchRecents = historyStore.searchRecents
+
+    private val tasteProfile = TasteProfile.getInstance(getApplication())
+    val topTasteTracks = tasteProfile.topTracks
+    val topTasteArtists: StateFlow<List<TasteArtist>> = tasteProfile.topArtists
+    fun tasteSeedTrack(): Track? = tasteProfile.seedTrack(homeRefreshCycle)
 
     fun removeFromRecents(trackId: String) = historyStore.removeFromRecents(trackId)
     fun clearRecentSearches() = historyStore.clearRecents()
@@ -845,6 +852,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun selectRotatingHomeSeed(fallbackPool: List<Track>): Track? {
+        tasteProfile.seedTrack(homeRefreshCycle)?.let { return it }
         val candidates = ArrayList<Track>()
         val seen = HashSet<String>()
         for (t in (recentlyPlayed.value.take(10) + _favorites.value.take(12) + fallbackPool.take(12))) {
@@ -1026,7 +1034,25 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             } else null
         } else null
 
-        /* 6. Dynamic Time-of-Day Vibe Shelf */
+        /* 6. Because You Liked [Track] Shelf (Taste-Seeded Automix Radio) */
+        val isTasteSeed = seedTrack != null && tasteProfile.topTracks.value.any { it.id == seedTrack.id }
+        val tasteSection = if (isTasteSeed && seedTrack != null && freshQuickPickTracks.isNotEmpty()) {
+            val tasteTracks = freshQuickPickTracks
+                .filterNot { it.id == seedTrack.id }
+                .distinctBy { it.id }
+                .take(12)
+            if (tasteTracks.size >= 4) {
+                HomeSection(
+                    title = seedTrack.title,
+                    subtitle = if (tasteProfile.isLiked(seedTrack.id)) "BECAUSE YOU LIKED" else "BECAUSE YOU KEEP PLAYING",
+                    tracks = tasteTracks,
+                    layoutType = com.xeylabs.vmusic.data.model.HomeSectionType.SIMILAR_TO,
+                    headerAvatarUrl = seedTrack.thumbnailUrl.takeIf { it.isNotBlank() }
+                )
+            } else null
+        } else null
+
+        /* 7. Dynamic Time-of-Day Vibe Shelf */
         val hour = java.util.Calendar.getInstance().get(java.util.Calendar.HOUR_OF_DAY)
         val (timeTitle, timeSub) = when (hour) {
             in 5..11 -> "Morning energize" to "FRESH START FOR TODAY"
@@ -1047,7 +1073,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             )
         } else null
 
-        /* 7. Remaining Server Shelves (Rotated & Internal Tracks Shifted on Refresh) */
+        /* 8. Remaining Server Shelves (Rotated & Internal Tracks Shifted on Refresh) */
         val consumedTitles = setOfNotNull(
             serverSpeedDial?.title?.lowercase(),
             serverQuickPicks?.title?.lowercase(),
@@ -1069,7 +1095,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             remainingServerShelves
         }
 
-        /* 8. Assemble Dynamic Living Feed (Alternates Top Anchor & Mid-Feed Rotation) */
+        /* 9. Assemble Dynamic Living Feed (Alternates Top Anchor & Mid-Feed Rotation) */
         val assembled = ArrayList<HomeSection>()
         if (cycle % 2 == 0) {
             if (speedDialSection != null) assembled.add(speedDialSection)
@@ -1082,6 +1108,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
         val midDynamicPool = listOfNotNull(
             listenAgainSection,
             dynamicSimilarSection,
+            tasteSection,
             timeSection,
             forgottenSection
         )
@@ -1577,6 +1604,7 @@ class MusicViewModel(application: Application) : AndroidViewModel(application) {
             currentFavs.add(0, track.copy(isFavorite = true))
         }
         _favorites.value = currentFavs
+        tasteProfile.recordLike(track, newLikeState)
         saveStoredFavorites(currentFavs) {
             try {
                 getApplication<Application>().sendBroadcast(
