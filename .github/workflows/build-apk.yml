@@ -116,8 +116,14 @@ jobs:
           VERSION_NAME: ${{ steps.apk.outputs.version }}
         run: |
           cat > RELEASE_NOTES.md <<'EOF'
-          ## vmusic v3.9.10 — Hardening: session, library, playback & verified updates
+          ## vmusic v3.9.11 — Taste profile, update notifications & V-Spatial
 
+          - **Profil selera (Taste Profile)**:
+            - App kini belajar dari yang kamu putar dan like: play count per lagu dan artis, like bernilai bobot berat. Seed radio Quick Picks diambil dari lagu teratas profilmu, dan rak baru "Because You Liked" muncul di home. Tanpa data, semua berjalan seperti dulu.
+          - **Notifikasi versi baru**:
+            - Kalau cek update menemukan rilis lebih baru, app menampilkan notifikasi lokal "vmusic vX.Y.Z tersedia" (sekali per versi). Ketuk notifikasinya untuk membuka dialog update. Tidak ada notifikasi kalau sudah versi terbaru atau cek gagal.
+          - **V-Spatial — efek suara ala Dolby Atmos**:
+            - Equalizer 5 band, bass boost, virtualizer, dan loudness enhancer bawaan Android, dengan preset V-Spatial, Bass, Vokal, Treble, dan Datar, plus kontrol manual dan tombol on/off. Logo V-Spatial baru di Settings dan player. (Bukan Dolby Atmos sungguhan — itu teknologi berlisensi; ini efek pelebar suara yang meniru rasanya.)
           - **Deteksi sesi login habis**:
             - App kini mendeteksi cookie YouTube yang sudah kedaluwarsa dan menampilkan banner "Sesi login habis" dengan tombol "Login lagi", bukan diam-diam menampilkan library kosong. Error jaringan tidak pernah salah menandai sesi sebagai habis.
           - **Cadangan otomatis library**:
@@ -153,7 +159,7 @@ jobs:
             "${{ steps.apk.outputs.arm32_path }}.sha256" \
             "${{ steps.apk.outputs.debug_path }}" \
             "${{ steps.apk.outputs.debug_path }}.sha256" \
-            --title "vmusic $RELEASE_TAG (Hardening: session, library, playback & verified updates)" \
+            --title "vmusic $RELEASE_TAG (Taste profile, update notifications & V-Spatial)" \
             --notes-file RELEASE_NOTES.md \
             --latest
 
