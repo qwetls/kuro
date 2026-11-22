@@ -57,6 +57,7 @@ import androidx.media3.datasource.cache.CacheDataSource
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor
 import androidx.media3.datasource.cache.SimpleCache
 import com.xeylabs.vmusic.data.auth.AuthManager
+import com.xeylabs.vmusic.data.audio.AudioEffectsManager
 import com.xeylabs.vmusic.data.cache.HistoryStore
 import com.xeylabs.vmusic.data.cache.JsonBackupPrefs
 import com.xeylabs.vmusic.data.cache.TasteProfile
@@ -293,6 +294,7 @@ class PlaybackService : MediaSessionService() {
     private var mediaSession: MediaSession? = null
     private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val repository = MusicRepository.getInstance()
+    private val audioEffectsManager: AudioEffectsManager by lazy { AudioEffectsManager.getInstance(this) }
 
     @Volatile
     private var restoringSession = false
@@ -460,8 +462,13 @@ class PlaybackService : MediaSessionService() {
                 }
             }
 
+            override fun onAudioSessionIdChanged(audioSessionId: Int) {
+                audioEffectsManager.attachToSession(audioSessionId)
+            }
+
             override fun onPlaybackStateChanged(playbackState: Int) {
                 if (playbackState == Player.STATE_READY) {
+                    audioEffectsManager.attachToSession(exoPlayer.audioSessionId)
                     PlayerQueueManager.recordPlaybackSuccess()
                     syncNotificationAndWidgets()
                 } else if (playbackState == Player.STATE_ENDED) {
@@ -1168,6 +1175,7 @@ class PlaybackService : MediaSessionService() {
         servicePlayJob?.cancel()
         servicePlayJob = null
         serviceScope.cancel()
+        audioEffectsManager.release()
         mediaSession?.run {
             player.release()
             release()

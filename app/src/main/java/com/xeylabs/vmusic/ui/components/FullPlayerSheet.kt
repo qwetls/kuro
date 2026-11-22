@@ -64,6 +64,7 @@ import androidx.compose.material.icons.outlined.Bedtime
 import androidx.compose.material.icons.outlined.BluetoothAudio
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.GraphicEq
 import androidx.compose.material.icons.outlined.Headphones
 import androidx.compose.material.icons.outlined.Lyrics
 import androidx.compose.material.icons.outlined.PlaylistAdd
@@ -124,6 +125,7 @@ import androidx.media3.common.Player
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.xeylabs.vmusic.R
+import com.xeylabs.vmusic.data.audio.AudioEffectsManager
 import com.xeylabs.vmusic.data.lyrics.LrcParser
 import com.xeylabs.vmusic.data.lyrics.LyricsData
 import com.xeylabs.vmusic.data.model.Track
@@ -813,6 +815,16 @@ fun FullPlayerSheet(
                             icon = Icons.Outlined.Radio,
                             label = "Radio",
                             onClick = { showRelatedSheet = true }
+                        )
+                    }
+
+                    item(key = "pill_effects") {
+                        val effectsOn by AudioEffectsManager.getInstance(context).enabled.collectAsState()
+                        YtmActionPill(
+                            icon = Icons.Outlined.GraphicEq,
+                            label = stringResource(R.string.player_effects),
+                            isActive = effectsOn,
+                            onClick = { showSettingsDialog = true }
                         )
                     }
                 }

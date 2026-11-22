@@ -45,10 +45,13 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Translate
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
@@ -71,6 +74,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,6 +82,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.xeylabs.vmusic.BuildConfig
 import com.xeylabs.vmusic.R
+import com.xeylabs.vmusic.data.audio.AudioEffectPreset
+import com.xeylabs.vmusic.data.audio.AudioEffectsManager
 import com.xeylabs.vmusic.data.settings.AppLanguage
 import com.xeylabs.vmusic.data.settings.AudioQuality
 import com.xeylabs.vmusic.data.settings.AudioSubQuality
@@ -111,6 +117,16 @@ fun SettingsDialog(
     val downloadTreeUri by settingsManager.downloadTreeUri.collectAsState()
     val downloadSubQuality by settingsManager.downloadSubQuality.collectAsState()
 
+    val audioEffectsManager = remember { AudioEffectsManager.getInstance(context) }
+    val effectsEnabled by audioEffectsManager.enabled.collectAsState()
+    val effectsPreset by audioEffectsManager.preset.collectAsState()
+    val effectsBands by audioEffectsManager.bandLevels.collectAsState()
+    val effectsBass by audioEffectsManager.bassStrength.collectAsState()
+    val effectsVirtualizer by audioEffectsManager.virtualizerStrength.collectAsState()
+    val effectsEqSupported by audioEffectsManager.equalizerSupported.collectAsState()
+    val effectsBassSupported by audioEffectsManager.bassSupported.collectAsState()
+    val effectsVirtSupported by audioEffectsManager.virtualizerSupported.collectAsState()
+
     val folderPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
@@ -136,6 +152,7 @@ fun SettingsDialog(
     var showDownloadQualityPicker by remember { mutableStateOf(false) }
     var showAppLangPicker by remember { mutableStateOf(false) }
     var showLyricsLangPicker by remember { mutableStateOf(false) }
+    var showEffectsPresetPicker by remember { mutableStateOf(false) }
 
     val scrollState = rememberScrollState()
 
@@ -285,6 +302,112 @@ fun SettingsDialog(
                                 }
                             }
                         )
+                    }
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    SettingsSectionHeader(text = stringResource(R.string.settings_section_sound_effects))
+                    SettingsGroupCard {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                SettingsIconBadge(icon = Icons.Outlined.GraphicEq)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = stringResource(R.string.settings_effects_title),
+                                        style = Typography.bodyMedium,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = colors.textPrimary
+                                    )
+                                    Text(
+                                        text = if (effectsEnabled) effectPresetLabel(effectsPreset) else stringResource(R.string.settings_effects_off),
+                                        style = Typography.bodySmall,
+                                        color = colors.textMuted,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.width(10.dp))
+                            Switch(
+                                checked = effectsEnabled,
+                                onCheckedChange = { audioEffectsManager.setEnabled(it) },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = colors.background,
+                                    checkedTrackColor = colors.accent,
+                                    uncheckedThumbColor = colors.textSecondary,
+                                    uncheckedTrackColor = colors.surface
+                                )
+                            )
+                        }
+
+                        AnimatedVisibility(visible = effectsEnabled) {
+                            Column(modifier = Modifier.fillMaxWidth()) {
+                                SettingsRowDivider()
+                                SettingsActionRow(
+                                    icon = Icons.Outlined.Tune,
+                                    title = stringResource(R.string.settings_effects_preset),
+                                    subtitle = effectPresetLabel(effectsPreset),
+                                    onClick = { showEffectsPresetPicker = true }
+                                )
+                                SettingsRowDivider()
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 14.dp, vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(R.string.settings_effects_equalizer),
+                                        style = Typography.labelSmall,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = colors.textMuted
+                                    )
+                                    EFFECT_BAND_LABELS.forEachIndexed { index, label ->
+                                        EffectsSliderRow(
+                                            label = label,
+                                            valueText = formatDb(effectsBands.getOrElse(index) { 0 }),
+                                            value = effectsBands.getOrElse(index) { 0 }.toFloat(),
+                                            valueRange = -1500f..1500f,
+                                            enabled = effectsEqSupported,
+                                            onValueChange = { audioEffectsManager.setBandLevel(index, it.toInt()) }
+                                        )
+                                    }
+                                    EffectsSliderRow(
+                                        label = stringResource(R.string.settings_effects_bass),
+                                        valueText = "${effectsBass / 10}%",
+                                        value = (effectsBass / 10).toFloat(),
+                                        valueRange = 0f..100f,
+                                        enabled = effectsBassSupported,
+                                        onValueChange = { audioEffectsManager.setBassStrength((it * 10).toInt()) }
+                                    )
+                                    EffectsSliderRow(
+                                        label = stringResource(R.string.settings_effects_virtualizer),
+                                        valueText = "${effectsVirtualizer / 10}%",
+                                        value = (effectsVirtualizer / 10).toFloat(),
+                                        valueRange = 0f..100f,
+                                        enabled = effectsVirtSupported,
+                                        onValueChange = { audioEffectsManager.setVirtualizerStrength((it * 10).toInt()) }
+                                    )
+                                    if (!effectsEqSupported) {
+                                        Text(
+                                            text = stringResource(R.string.settings_effects_not_supported),
+                                            style = Typography.bodySmall,
+                                            color = colors.textMuted
+                                        )
+                                    }
+                                }
+                            }
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -687,6 +810,84 @@ fun SettingsDialog(
         )
     }
 
+    if (showEffectsPresetPicker) {
+        AlertDialog(
+            onDismissRequest = { showEffectsPresetPicker = false },
+            containerColor = colors.surface,
+            title = {
+                Text(
+                    text = stringResource(R.string.settings_effects_preset),
+                    style = Typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.textPrimary
+                )
+            },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    listOf(
+                        AudioEffectPreset.FLAT,
+                        AudioEffectPreset.SPATIAL,
+                        AudioEffectPreset.BASS,
+                        AudioEffectPreset.VOCAL,
+                        AudioEffectPreset.TREBLE
+                    ).forEach { preset ->
+                        val isSelected = effectsPreset == preset
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(if (isSelected) colors.card else Color.Transparent)
+                                .border(
+                                    1.dp,
+                                    if (isSelected) colors.accent else colors.border,
+                                    RoundedCornerShape(12.dp)
+                                )
+                                .clickable {
+                                    audioEffectsManager.setPreset(preset)
+                                    showEffectsPresetPicker = false
+                                }
+                                .padding(horizontal = 14.dp, vertical = 11.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = effectPresetLabel(preset),
+                                    style = Typography.bodyMedium,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = colors.textPrimary
+                                )
+                                Text(
+                                    text = effectPresetDescription(preset),
+                                    style = Typography.labelSmall,
+                                    color = colors.textMuted
+                                )
+                            }
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = stringResource(R.string.common_selected),
+                                    tint = colors.accent,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showEffectsPresetPicker = false }) {
+                    Text(stringResource(R.string.action_close), color = colors.textPrimary)
+                }
+            }
+        )
+    }
+
     if (showAppLangPicker) {
         AlertDialog(
             onDismissRequest = { showAppLangPicker = false },
@@ -996,4 +1197,81 @@ fun LyricsLanguagePickerDialog(
         },
         containerColor = colors.surface
     )
+}
+
+private val EFFECT_BAND_LABELS = listOf("60 Hz", "230 Hz", "910 Hz", "3.6 kHz", "14 kHz")
+
+@Composable
+private fun effectPresetLabel(preset: AudioEffectPreset): String {
+    return when (preset) {
+        AudioEffectPreset.FLAT -> stringResource(R.string.settings_effects_preset_flat)
+        AudioEffectPreset.SPATIAL -> stringResource(R.string.settings_effects_preset_spatial)
+        AudioEffectPreset.BASS -> stringResource(R.string.settings_effects_preset_bass)
+        AudioEffectPreset.VOCAL -> stringResource(R.string.settings_effects_preset_vocal)
+        AudioEffectPreset.TREBLE -> stringResource(R.string.settings_effects_preset_treble)
+        AudioEffectPreset.CUSTOM -> stringResource(R.string.settings_effects_preset_custom)
+    }
+}
+
+@Composable
+private fun effectPresetDescription(preset: AudioEffectPreset): String {
+    return when (preset) {
+        AudioEffectPreset.FLAT -> stringResource(R.string.settings_effects_preset_flat_desc)
+        AudioEffectPreset.SPATIAL -> stringResource(R.string.settings_effects_preset_spatial_desc)
+        AudioEffectPreset.BASS -> stringResource(R.string.settings_effects_preset_bass_desc)
+        AudioEffectPreset.VOCAL -> stringResource(R.string.settings_effects_preset_vocal_desc)
+        AudioEffectPreset.TREBLE -> stringResource(R.string.settings_effects_preset_treble_desc)
+        AudioEffectPreset.CUSTOM -> stringResource(R.string.settings_effects_preset_custom)
+    }
+}
+
+private fun formatDb(levelMillibels: Int): String {
+    return String.format("%+.1f dB", levelMillibels / 100f)
+}
+
+@Composable
+private fun EffectsSliderRow(
+    label: String,
+    valueText: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    enabled: Boolean,
+    onValueChange: (Float) -> Unit
+) {
+    val colors = VmusicAppTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = label,
+            style = Typography.bodySmall,
+            fontWeight = FontWeight.SemiBold,
+            color = colors.textPrimary,
+            modifier = Modifier.width(72.dp)
+        )
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+            enabled = enabled,
+            modifier = Modifier.weight(1f),
+            colors = SliderDefaults.colors(
+                thumbColor = colors.accent,
+                activeTrackColor = colors.accent,
+                inactiveTrackColor = colors.surface,
+                disabledThumbColor = colors.textMuted,
+                disabledActiveTrackColor = colors.surface,
+                disabledInactiveTrackColor = colors.surface
+            )
+        )
+        Text(
+            text = valueText,
+            style = Typography.labelSmall,
+            color = colors.textSecondary,
+            modifier = Modifier.width(58.dp),
+            textAlign = TextAlign.End
+        )
+    }
 }
